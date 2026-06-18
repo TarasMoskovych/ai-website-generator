@@ -55,7 +55,7 @@ This implementation plan covers building a full-stack AI-powered website generat
     - Subscribe to Firebase auth state changes
     - _Requirements: 13.3, 13.5_
 
-  - [~] 3.4 Create ProtectedRoute component
+  - [x] 3.4 Create ProtectedRoute component
     - Implement route protection wrapper
     - Redirect unauthenticated users to login page
     - Store intended destination for post-auth redirect
@@ -86,8 +86,8 @@ This implementation plan covers building a full-stack AI-powered website generat
 - [~] 4. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Input Validation Services
-  - [~] 5.1 Create TextInputValidator service
+- [x] 5. Input Validation Services
+  - [x] 5.1 Create TextInputValidator service
     - Implement `validateTextInput()` method
     - Check minimum length (10 characters)
     - Check maximum length (10,000 characters)
@@ -98,7 +98,7 @@ This implementation plan covers building a full-stack AI-powered website generat
     - **Property 1: Text Input Validation Boundaries**
     - **Validates: Requirements 1.1, 1.6**
 
-  - [~] 5.3 Create ScreenshotInputValidator service
+  - [x] 5.3 Create ScreenshotInputValidator service
     - Implement `validateScreenshotInput()` method
     - Validate MIME type (PNG, JPEG, WebP only)
     - Validate file size (max 10MB)
@@ -109,7 +109,7 @@ This implementation plan covers building a full-stack AI-powered website generat
     - **Property 2: Screenshot Input Validation**
     - **Validates: Requirements 2.1, 2.2, 2.3, 2.6, 2.7, 2.8**
 
-  - [~] 5.5 Create TitleValidator service
+  - [x] 5.5 Create TitleValidator service
     - Implement `validateTitle()` method
     - Check minimum length (1 character)
     - Check maximum length (100 characters)
