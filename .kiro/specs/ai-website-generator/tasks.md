@@ -249,8 +249,8 @@ This implementation plan covers building a full-stack AI-powered website generat
 - [~] 11. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 12. Download Service
-  - [~] 12.1 Implement single file download generation
+- [x] 12. Download Service
+  - [x] 12.1 Implement single file download generation
     - Create `services/downloadService.ts`
     - Implement `generateSingleFile()` method
     - Embed CSS in style element within HTML head
@@ -261,7 +261,7 @@ This implementation plan covers building a full-stack AI-powered website generat
     - **Property 6: Single File Download Generation**
     - **Validates: Requirements 4.2**
 
-  - [~] 12.3 Implement ZIP archive download generation
+  - [x] 12.3 Implement ZIP archive download generation
     - Install JSZip package
     - Implement `generateZipArchive()` method
     - Create index.html with link to styles.css

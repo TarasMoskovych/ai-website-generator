@@ -86,3 +86,13 @@ export type {
   GetAllByUserOptions,
   WebsiteRepositoryService,
 } from './websiteRepository';
+
+// Download Service
+export {
+  generateSingleFile,
+  generateZipArchive,
+  downloadBlob,
+  DownloadServiceImpl,
+  downloadService,
+} from './downloadService';
+export type { DownloadService } from './downloadService';
