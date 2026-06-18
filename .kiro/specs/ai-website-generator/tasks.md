@@ -281,7 +281,7 @@ This implementation plan covers building a full-stack AI-powered website generat
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 14. Theme System
-  - [~] 14.1 Create ThemeProvider and theme context
+  - [x] 14.1 Create ThemeProvider and theme context
     - Create `components/layout/ThemeProvider.tsx`
     - Implement theme context with light/dark/system options
     - Detect system color scheme preference
