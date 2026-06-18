@@ -37,3 +37,29 @@ export {
   titleValidator,
   TITLE_VALIDATION_ERRORS,
 } from './validation';
+
+// Generation Services
+export {
+  // Text Generation
+  generateWebsiteFromText,
+  TextGenerationError,
+  TextGenerationErrorCode,
+  textGeneration,
+  // Screenshot Generation
+  generateWebsiteFromImage,
+  ScreenshotGenerationError,
+  ScreenshotGenerationErrorCode,
+  screenshotGeneration,
+  // Code Extraction
+  extractCodeFromResponse,
+  extractHtmlFromResponse,
+  extractCssFromResponse,
+  extractTitleFromResponse,
+  codeExtractor,
+} from './generation';
+export type {
+  ImageMimeType,
+  ExtractionResult,
+  ExtractionSuccess,
+  ExtractionFailure,
+} from './generation';

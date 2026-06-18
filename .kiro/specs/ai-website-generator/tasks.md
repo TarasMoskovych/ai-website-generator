@@ -127,14 +127,14 @@ This implementation plan covers building a full-stack AI-powered website generat
     - Set up API key from environment variables
     - _Requirements: 1.2, 2.4_
 
-  - [~] 6.2 Implement text-based website generation
+  - [x] 6.2 Implement text-based website generation
     - Create `generateWebsiteFromText()` function
     - Include system prompt with HTML5/BEM/accessibility requirements
     - Include dark theme generation instructions
     - Handle 60-second timeout with AbortSignal
     - _Requirements: 1.2, 1.8, 17.1-17.7, 18.1-18.4_
 
-  - [~] 6.3 Implement screenshot-based website generation
+  - [x] 6.3 Implement screenshot-based website generation
     - Create `generateWebsiteFromImage()` function
     - Send image as base64 with vision capabilities
     - Include screenshot-specific system prompt
