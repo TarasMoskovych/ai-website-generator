@@ -120,7 +120,7 @@ This implementation plan covers building a full-stack AI-powered website generat
     - **Validates: Requirements 11.5**
 
 - [ ] 6. Claude API Integration
-  - [~] 6.1 Set up Anthropic SDK and Claude client
+  - [x] 6.1 Set up Anthropic SDK and Claude client
     - Install @anthropic-ai/sdk package
     - Create `lib/claude.ts` with Anthropic client initialization
     - Configure Claude 3.5 Haiku model constant
