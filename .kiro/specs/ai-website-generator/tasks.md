@@ -37,7 +37,7 @@ This implementation plan covers building a full-stack AI-powered website generat
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 3. Authentication System
-  - [~] 3.1 Create AuthService for Google sign-in
+  - [x] 3.1 Create AuthService for Google sign-in
     - Implement `signInWithGoogle()` using Firebase Auth with Google provider
     - Implement `signOut()` to terminate user session
     - Implement `getCurrentUser()` to get current auth state
