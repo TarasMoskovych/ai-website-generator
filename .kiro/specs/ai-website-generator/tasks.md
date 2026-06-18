@@ -163,7 +163,7 @@ This implementation plan covers building a full-stack AI-powered website generat
 - [~] 7. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Website Generation API Route
+- [x] 8. Website Generation API Route
   - [x] 8.1 Create generate API route with auth middleware
     - Create `app/api/generate/route.ts`
     - Implement POST handler for generation requests
@@ -171,7 +171,7 @@ This implementation plan covers building a full-stack AI-powered website generat
     - Handle both text and screenshot request types
     - _Requirements: 1.2, 2.4, 14.1_
 
-  - [~] 8.2 Implement generation request handling and response formatting
+  - [x] 8.2 Implement generation request handling and response formatting
     - Validate request body based on type (text/screenshot)
     - Call appropriate Claude generation function
     - Format response with GenerateResponse interface
@@ -198,7 +198,7 @@ This implementation plan covers building a full-stack AI-powered website generat
     - **Validates: Requirements 3.6**
 
 - [ ] 10. Website Repository Service
-  - [~] 10.1 Implement WebsiteRepository with Firestore CRUD operations
+  - [x] 10.1 Implement WebsiteRepository with Firestore CRUD operations
     - Create `services/websiteRepository.ts`
     - Implement `save()` to persist website to Firestore
     - Implement `getById()` to retrieve single website

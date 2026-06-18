@@ -71,3 +71,18 @@ export {
   htmlSanitizer,
 } from './htmlSanitizer';
 export type { HtmlSanitizerService } from './htmlSanitizer';
+
+// Website Repository Service
+export {
+  save,
+  getById,
+  getAllByUser,
+  update,
+  deleteWebsite,
+  default as websiteRepository,
+} from './websiteRepository';
+export type {
+  PaginatedResult,
+  GetAllByUserOptions,
+  WebsiteRepositoryService,
+} from './websiteRepository';
