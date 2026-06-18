@@ -36,7 +36,7 @@ This implementation plan covers building a full-stack AI-powered website generat
 - [x] 2. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 3. Authentication System
+- [x] 3. Authentication System
   - [x] 3.1 Create AuthService for Google sign-in
     - Implement `signInWithGoogle()` using Firebase Auth with Google provider
     - Implement `signOut()` to terminate user session
@@ -70,7 +70,7 @@ This implementation plan covers building a full-stack AI-powered website generat
     - **Property 22: Post-Authentication Redirect**
     - **Validates: Requirements 14.3**
 
-  - [~] 3.7 Create Login page with Google Sign-In button
+  - [x] 3.7 Create Login page with Google Sign-In button
     - Create `app/page.tsx` as public login page
     - Implement GoogleSignInButton component
     - Handle auth success/error callbacks
@@ -119,7 +119,7 @@ This implementation plan covers building a full-stack AI-powered website generat
     - **Property 16: Title Length Validation**
     - **Validates: Requirements 11.5**
 
-- [ ] 6. Claude API Integration
+- [x] 6. Claude API Integration
   - [x] 6.1 Set up Anthropic SDK and Claude client
     - Install @anthropic-ai/sdk package
     - Create `lib/claude.ts` with Anthropic client initialization
@@ -141,7 +141,7 @@ This implementation plan covers building a full-stack AI-powered website generat
     - Handle timeout and error responses
     - _Requirements: 2.4, 2.5, 2.9, 17.1-17.7, 18.1-18.4_
 
-  - [~] 6.4 Create code extraction service
+  - [x] 6.4 Create code extraction service
     - Implement HTML/CSS extraction from Claude response
     - Parse markdown code blocks (`html, `css)
     - Extract title from response
