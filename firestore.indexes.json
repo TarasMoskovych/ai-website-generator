@@ -7,6 +7,15 @@
         { "fieldPath": "userId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "websites",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isPublic", "order": "ASCENDING" },
+        { "fieldPath": "isShowcased", "order": "ASCENDING" },
+        { "fieldPath": "showcasedAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -2,7 +2,7 @@
  * Website Repository Service
  * Handles CRUD operations for website documents in Firebase Firestore
  *
- * Requirements: 5.1, 5.3, 5.4, 5.5, 5.6, 6.1
+ * Requirements: 5.1, 5.3, 5.4, 5.5, 5.6, 6.1, 23.2, 23.3, 23.6, 23.10
  */
 
 import {
@@ -24,7 +24,7 @@ import {
   QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { GeneratedWebsite, CreateWebsiteData, UpdateWebsiteData } from '@/types/website';
+import { GeneratedWebsite, CreateWebsiteData, UpdateWebsiteData, ShowcasedWebsite } from '@/types/website';
 
 /**
  * Firestore collection name for websites
@@ -56,14 +56,24 @@ export interface GetAllByUserOptions {
 }
 
 /**
+ * Options for getShowcasedWebsites query
+ */
+export interface GetShowcasedOptions {
+  page?: number;
+  pageSize?: number;
+}
+
+/**
  * Website Repository Service Interface
  */
 export interface WebsiteRepositoryService {
-  save(userId: string, website: CreateWebsiteData): Promise<GeneratedWebsite>;
+  save(userId: string, website: CreateWebsiteData, creatorName: string): Promise<GeneratedWebsite>;
   getById(id: string): Promise<GeneratedWebsite | null>;
   getAllByUser(userId: string, options?: GetAllByUserOptions): Promise<PaginatedResult<GeneratedWebsite>>;
   update(id: string, updates: UpdateWebsiteData): Promise<void>;
   delete(id: string): Promise<void>;
+  toggleShowcase(id: string, isShowcased: boolean): Promise<void>;
+  getShowcasedWebsites(options?: GetShowcasedOptions): Promise<PaginatedResult<ShowcasedWebsite>>;
 }
 
 /**
@@ -82,12 +92,35 @@ function documentToWebsite(
     thumbnailUrl: data.thumbnailUrl || data.thumbnail || '', // Support both field names
     inputType: data.inputType || data.sourceType, // Support both field names
     isPublic: data.isPublic ?? true,
+    isShowcased: data.isShowcased ?? false,
+    showcasedAt: data.showcasedAt instanceof Timestamp
+      ? data.showcasedAt.toDate().toISOString()
+      : data.showcasedAt || null,
+    creatorName: data.creatorName || 'Anonymous',
     createdAt: data.createdAt instanceof Timestamp
       ? data.createdAt.toDate().toISOString()
       : data.createdAt,
     updatedAt: data.updatedAt instanceof Timestamp
       ? data.updatedAt.toDate().toISOString()
       : data.updatedAt,
+  };
+}
+
+/**
+ * Converts Firestore document data to ShowcasedWebsite (minimal data)
+ */
+function documentToShowcasedWebsite(
+  id: string,
+  data: DocumentData
+): ShowcasedWebsite {
+  return {
+    id,
+    title: data.title,
+    thumbnailUrl: data.thumbnailUrl || data.thumbnail || '',
+    creatorName: data.creatorName || 'Anonymous',
+    showcasedAt: data.showcasedAt instanceof Timestamp
+      ? data.showcasedAt.toDate().toISOString()
+      : data.showcasedAt,
   };
 }
 
@@ -99,12 +132,14 @@ function documentToWebsite(
  *
  * @param userId - Firebase Auth UID of the owner
  * @param website - Website data to save (without id, userId, timestamps)
+ * @param creatorName - Display name of the creator for showcase attribution
  * @returns Promise resolving to the saved website with generated ID
  * @throws Error if persistence fails
  */
 export async function save(
   userId: string,
-  website: CreateWebsiteData
+  website: CreateWebsiteData,
+  creatorName: string = 'Anonymous'
 ): Promise<GeneratedWebsite> {
   try {
     const now = Timestamp.now();
@@ -117,6 +152,9 @@ export async function save(
       thumbnailUrl: website.thumbnailUrl,
       inputType: website.inputType,
       isPublic: website.isPublic ?? true,
+      isShowcased: false,
+      showcasedAt: null,
+      creatorName,
       createdAt: now,
       updatedAt: now,
     };
@@ -134,6 +172,9 @@ export async function save(
       thumbnailUrl: website.thumbnailUrl,
       inputType: website.inputType,
       isPublic: website.isPublic ?? true,
+      isShowcased: false,
+      showcasedAt: null,
+      creatorName,
       createdAt: now.toDate().toISOString(),
       updatedAt: now.toDate().toISOString(),
     };
@@ -318,6 +359,166 @@ export async function update(
 }
 
 /**
+ * Toggles the showcase status of a website
+ *
+ * Requirement 23.2: Update isShowcased field to true and record showcasedAt timestamp
+ * Requirement 23.3: Update isShowcased field to false
+ *
+ * @param id - Firestore document ID
+ * @param isShowcased - Whether to showcase the website
+ * @returns Promise that resolves when update is complete
+ * @throws Error if update fails
+ */
+export async function toggleShowcase(
+  id: string,
+  isShowcased: boolean
+): Promise<void> {
+  try {
+    const docRef = doc(db, WEBSITES_COLLECTION, id);
+
+    // Check if document exists
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) {
+      throw new Error('Website not found');
+    }
+
+    // Update showcase status
+    const updateData: Record<string, unknown> = {
+      isShowcased,
+      updatedAt: Timestamp.now(),
+    };
+
+    // Set showcasedAt timestamp when enabling showcase
+    if (isShowcased) {
+      updateData.showcasedAt = Timestamp.now();
+    } else {
+      updateData.showcasedAt = null;
+    }
+
+    await updateDoc(docRef, updateData);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to update showcase status: ${error.message}`);
+    }
+    throw new Error('Failed to update showcase status: An unknown error occurred');
+  }
+}
+
+/**
+ * Retrieves showcased websites for public display
+ *
+ * Requirement 23.6: Provide dedicated /showcase page with pagination (12 per page)
+ * Requirement 23.7: Sort by showcasedAt descending (newest first)
+ * Requirement 23.10: Only include websites where isPublic AND isShowcased are true
+ *
+ * @param options - Pagination options (page, pageSize)
+ * @returns Promise resolving to paginated result of showcased websites
+ * @throws Error if retrieval fails
+ */
+export async function getShowcasedWebsites(
+  options: GetShowcasedOptions = {}
+): Promise<PaginatedResult<ShowcasedWebsite>> {
+  try {
+    const { page = 1, pageSize = DEFAULT_PAGE_SIZE } = options;
+
+    // Validate pagination parameters
+    const validPage = Math.max(1, page);
+    const validPageSize = Math.max(1, Math.min(100, pageSize));
+
+    // Get total count for pagination info
+    // Note: Firestore requires a composite index for this query
+    const countQuery = query(
+      collection(db, WEBSITES_COLLECTION),
+      where('isPublic', '==', true),
+      where('isShowcased', '==', true)
+    );
+    const countSnapshot = await getCountFromServer(countQuery);
+    const totalCount = countSnapshot.data().count;
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalCount / validPageSize);
+
+    // If no showcased websites or requesting beyond available pages
+    if (totalCount === 0 || (validPage > totalPages && totalPages > 0)) {
+      return {
+        items: [],
+        totalCount,
+        page: validPage,
+        pageSize: validPageSize,
+        totalPages: totalPages || 0,
+      };
+    }
+
+    // Build query with ordering by showcasedAt (newest first)
+    const offset = (validPage - 1) * validPageSize;
+
+    let showcaseQuery;
+
+    if (offset === 0) {
+      // First page - simple query
+      showcaseQuery = query(
+        collection(db, WEBSITES_COLLECTION),
+        where('isPublic', '==', true),
+        where('isShowcased', '==', true),
+        orderBy('showcasedAt', 'desc'),
+        limit(validPageSize)
+      );
+    } else {
+      // For pagination, fetch documents to skip
+      const skipQuery = query(
+        collection(db, WEBSITES_COLLECTION),
+        where('isPublic', '==', true),
+        where('isShowcased', '==', true),
+        orderBy('showcasedAt', 'desc'),
+        limit(offset)
+      );
+      const skipSnapshot = await getDocs(skipQuery);
+
+      if (skipSnapshot.docs.length < offset) {
+        return {
+          items: [],
+          totalCount,
+          page: validPage,
+          pageSize: validPageSize,
+          totalPages,
+        };
+      }
+
+      const lastDoc = skipSnapshot.docs[skipSnapshot.docs.length - 1];
+
+      showcaseQuery = query(
+        collection(db, WEBSITES_COLLECTION),
+        where('isPublic', '==', true),
+        where('isShowcased', '==', true),
+        orderBy('showcasedAt', 'desc'),
+        startAfter(lastDoc),
+        limit(validPageSize)
+      );
+    }
+
+    const querySnapshot = await getDocs(showcaseQuery);
+
+    const items: ShowcasedWebsite[] = querySnapshot.docs.map(
+      (docSnap: QueryDocumentSnapshot<DocumentData>) =>
+        documentToShowcasedWebsite(docSnap.id, docSnap.data())
+    );
+
+    return {
+      items,
+      totalCount,
+      page: validPage,
+      pageSize: validPageSize,
+      totalPages,
+    };
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to retrieve showcased websites: ${error.message}`);
+    }
+    throw new Error('Failed to retrieve showcased websites: An unknown error occurred');
+  }
+}
+
+/**
  * Deletes a website from Firestore
  *
  * Requirement 5.5: Delete website permanently from Firestore
@@ -354,6 +555,8 @@ const websiteRepository: WebsiteRepositoryService = {
   getAllByUser,
   update,
   delete: deleteWebsite,
+  toggleShowcase,
+  getShowcasedWebsites,
 };
 
 export default websiteRepository;

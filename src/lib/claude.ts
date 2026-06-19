@@ -24,15 +24,17 @@ export const anthropic = new Anthropic({
 
 /**
  * Claude model constant
- * Using Claude 3.5 Haiku - fastest and most cost-effective model with vision capabilities
+ * Using Claude Haiku 4.5 - fastest and most cost-effective model with vision capabilities
+ * See: https://docs.anthropic.com/en/docs/models-overview
  */
-export const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
+export const CLAUDE_MODEL = 'claude-haiku-4-5-20251001';
 
 /**
  * Maximum tokens for Claude API response
- * Set to 8192 to allow for complete HTML and CSS generation
+ * Set to 16384 to allow for complete HTML and CSS generation,
+ * especially for complex screenshot-based generation
  */
-export const MAX_TOKENS = 8192;
+export const MAX_TOKENS = 16384;
 
 /**
  * Response structure from Claude API generation functions
@@ -76,17 +78,34 @@ Dark Theme Guidelines:
 - Use @media (prefers-color-scheme: dark) for dark theme overrides
 - Ensure WCAG AA contrast ratios in both themes
 
-Output format:
+IMPORTANT: You MUST output the code in exactly this format with BOTH html and css code blocks:
+
 \`\`\`html
-[HTML code here]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Title</title>
+</head>
+<body>
+    <!-- Your HTML content here -->
+</body>
+</html>
 \`\`\`
 
 \`\`\`css
-[CSS code here]
+/* Your complete CSS styles here - DO NOT reference external stylesheets */
+:root {
+    /* CSS variables */
+}
+
+/* All styles must be included in this block */
 \`\`\`
 
-Also generate a concise title (3-100 characters) that summarizes the website's purpose.
-Title: [title here]`;
+Title: [concise title 3-100 characters that summarizes the website's purpose]
+
+CRITICAL: Do NOT use <link rel="stylesheet" href="..."> - all CSS must be in the css code block above.`;
 
 /**
  * System prompt for screenshot-based website generation
@@ -116,16 +135,33 @@ Dark Theme Guidelines:
 - Use @media (prefers-color-scheme: dark) for dark theme variant
 - Ensure WCAG AA contrast ratios in both themes
 
-Output format:
+IMPORTANT: You MUST output the code in exactly this format with BOTH html and css code blocks:
+
 \`\`\`html
-[HTML code here]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Title</title>
+</head>
+<body>
+    <!-- Your HTML content here -->
+</body>
+</html>
 \`\`\`
 
 \`\`\`css
-[CSS code here]
+/* Your complete CSS styles here - DO NOT reference external stylesheets */
+:root {
+    /* CSS variables */
+}
+
+/* All styles must be included in this block */
 \`\`\`
 
-Also generate a concise title (3-100 characters) based on the website's apparent purpose.
-Title: [title here]`;
+Title: [concise title 3-100 characters based on the website's apparent purpose]
+
+CRITICAL: Do NOT use <link rel="stylesheet" href="..."> - all CSS must be in the css code block above.`;
 
 export default anthropic;

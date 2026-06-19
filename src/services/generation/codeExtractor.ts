@@ -4,6 +4,9 @@
  * This module provides functionality for extracting HTML, CSS, and title
  * from Claude API responses. It parses markdown code blocks and extracts
  * the relevant code sections.
+ *
+ * Supports both complete and truncated responses (e.g., from streaming
+ * where the response may be cut off before closing backticks).
  */
 
 /**
@@ -14,6 +17,8 @@ export interface ExtractionSuccess {
   html: string;
   css: string;
   title: string;
+  /** Indicates if the response was truncated (incomplete code blocks) */
+  truncated?: boolean;
 }
 
 /**
@@ -31,9 +36,17 @@ export type ExtractionResult = ExtractionSuccess | ExtractionFailure;
 
 /**
  * Regular expressions for parsing code blocks and title
+ * Includes both complete (with closing backticks) and truncated (without closing) patterns
  */
+// Complete code blocks with closing backticks
 const HTML_CODE_BLOCK_REGEX = /```html\s*([\s\S]*?)```/i;
 const CSS_CODE_BLOCK_REGEX = /```css\s*([\s\S]*?)```/i;
+
+// Truncated code blocks - captures content after opening marker until end or next code block
+// This handles cases where streaming is cut off before closing backticks
+const HTML_TRUNCATED_REGEX = /```html\s*([\s\S]*?)(?=```(?:css|$)|$)/i;
+const CSS_TRUNCATED_REGEX = /```css\s*([\s\S]*?)(?=```(?:html|$)|$)/i;
+
 const TITLE_REGEX = /Title:\s*(.+?)(?:\n|$)/i;
 
 /**
@@ -52,6 +65,9 @@ const TITLE_MAX_LENGTH = 100;
  *
  * The response is expected to contain markdown code blocks with `html` and `css`
  * language markers, and a title line in the format "Title: [title here]".
+ *
+ * This function handles both complete responses (with closing backticks) and
+ * truncated responses from streaming where the output may be cut off mid-generation.
  *
  * @param response - The raw text response from Claude API
  * @returns ExtractionResult indicating success with extracted content or failure with error
@@ -82,13 +98,37 @@ export function extractCodeFromResponse(response: string): ExtractionResult {
     };
   }
 
-  // Extract HTML
-  const htmlMatch = response.match(HTML_CODE_BLOCK_REGEX);
+  // Try to extract HTML with complete code block first
+  let htmlMatch = response.match(HTML_CODE_BLOCK_REGEX);
+  let truncated = false;
+
+  // If complete extraction fails, try truncated pattern
+  if (!htmlMatch?.[1]?.trim()) {
+    htmlMatch = response.match(HTML_TRUNCATED_REGEX);
+    if (htmlMatch?.[1]?.trim()) {
+      truncated = true;
+    }
+  }
+
   const html = htmlMatch?.[1]?.trim() || '';
 
-  // Extract CSS
-  const cssMatch = response.match(CSS_CODE_BLOCK_REGEX);
-  const css = cssMatch?.[1]?.trim() || '';
+  // Try to extract CSS with complete code block first
+  let cssMatch = response.match(CSS_CODE_BLOCK_REGEX);
+
+  // If complete extraction fails, try truncated pattern
+  if (!cssMatch?.[1]?.trim()) {
+    cssMatch = response.match(CSS_TRUNCATED_REGEX);
+    if (cssMatch?.[1]?.trim()) {
+      truncated = true;
+    }
+  }
+
+  let css = cssMatch?.[1]?.trim() || '';
+
+  // If no separate CSS block, try to extract inline styles from HTML
+  if (!css && html) {
+    css = extractInlineStyles(html);
+  }
 
   // Validate that we have at least HTML content
   if (!html) {
@@ -106,7 +146,20 @@ export function extractCodeFromResponse(response: string): ExtractionResult {
     html,
     css,
     title,
+    truncated,
   };
+}
+
+/**
+ * Extracts inline <style> content from HTML when no separate CSS block exists.
+ * This handles cases where all CSS is embedded within the HTML.
+ *
+ * @param html - The HTML content to extract styles from
+ * @returns The extracted CSS or empty string if not found
+ */
+function extractInlineStyles(html: string): string {
+  const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+  return styleMatch?.[1]?.trim() || '';
 }
 
 /**

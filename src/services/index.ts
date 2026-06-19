@@ -96,3 +96,51 @@ export {
   downloadService,
 } from './downloadService';
 export type { DownloadService } from './downloadService';
+
+// Thumbnail Service
+export {
+  generateThumbnail,
+  getPlaceholderThumbnail,
+  isValidThumbnailDataUrl,
+  thumbnailService,
+} from './thumbnailService';
+export type {
+  ThumbnailOptions,
+  ThumbnailResult,
+  ThumbnailService,
+} from './thumbnailService';
+
+// Image Processor Service
+export {
+  processImageForClaude,
+  getImageDimensions,
+  validateImageDimensions,
+  default as imageProcessorService,
+} from './imageProcessor';
+export type { ProcessedImage } from './imageProcessor';
+
+// Error Handling Service
+export {
+  // Error message utilities
+  ERROR_MESSAGE_MAP,
+  getErrorMessage,
+  getErrorMessageWithWaitTime,
+  // Retry utilities
+  withRetry,
+  isRetryableError,
+  // Type guards
+  isAppError,
+  // Rate limit parsing
+  parseRateLimitWaitTime,
+  parseRateLimitFromHeaders,
+  // Error normalization
+  normalizeError,
+  categorizeError,
+  createErrorFromResponse,
+  // Fetch wrappers
+  fetchWithErrorHandling,
+  fetchWithRetry,
+  // Service singleton
+  errorHandlingService,
+} from './errorHandling';
+export type { RetryOptions, RateLimitResponse } from './errorHandling';

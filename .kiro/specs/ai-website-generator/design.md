@@ -220,6 +220,8 @@ interface LoadingIndicatorProps {
   stage: GenerationStage;
   onCancel: () => void;
   elapsedTime: number;
+  /** Optional streaming content to display in collapsible preview panel */
+  streamingContent?: string;
 }
 
 // components/DownloadDialog.tsx
@@ -289,6 +291,24 @@ interface GenerateErrorResponse {
     retryAfter?: number; // For rate limiting
   };
 }
+
+// app/api/generate/stream/route.ts - Streaming endpoint for both text and screenshot
+// Accepts: { type: 'text', description: string } or { type: 'screenshot', image: string, mimeType: string }
+// Returns Server-Sent Events (SSE) stream
+// Events:
+//   - start: Generation has started
+//   - text: New text chunk received { content: string }
+//   - done: Generation complete { result: { html, css, title } }
+//   - error: An error occurred { error: string }
+interface StreamEventData {
+  content?: string;
+  result?: {
+    html: string;
+    css: string;
+    title: string;
+  };
+  error?: string;
+}
 ```
 
 #### Service Interfaces
@@ -317,6 +337,24 @@ interface WebsiteGeneratorService {
     mimeType: string,
     signal?: AbortSignal
   ): Promise<GenerationResult>;
+  /** Streaming generation for text input - yields real-time progress events */
+  generateFromTextStream(
+    description: string,
+    signal?: AbortSignal
+  ): AsyncGenerator<StreamEvent>;
+  /** Streaming generation for screenshot input - yields real-time progress events */
+  generateFromScreenshotStream(
+    image: string,
+    mimeType: string,
+    signal?: AbortSignal
+  ): AsyncGenerator<StreamEvent>;
+}
+
+interface StreamEvent {
+  type: 'start' | 'text' | 'done' | 'error';
+  content?: string;
+  result?: GenerationResult;
+  error?: string;
 }
 
 interface GenerationResult {
@@ -380,8 +418,8 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// Using Claude 3.5 Haiku - fastest and most cost-effective model
-const CLAUDE_MODEL = 'claude-3-5-haiku-20241022';
+// Using Claude Haiku 4.5 - fastest and most cost-effective model
+const CLAUDE_MODEL = 'claude-haiku-4-5-20251001';
 
 interface ClaudeClient {
   generateWebsite(prompt: string, signal?: AbortSignal): Promise<ClaudeResponse>;
@@ -618,6 +656,8 @@ interface AppError {
 
 ### Firebase Configuration
 
+#### Client-Side Configuration (lib/firebase.ts)
+
 ```typescript
 // lib/firebase.ts
 import { initializeApp } from 'firebase/app';
@@ -639,6 +679,48 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+```
+
+#### Server-Side Configuration (lib/firebaseAdmin.ts)
+
+The Firebase Admin SDK is used for server-side token verification in API routes. It requires a service account credential.
+
+**Required Environment Variables:**
+- `FIREBASE_ADMIN_PROJECT_ID` - Firebase project ID
+- `FIREBASE_ADMIN_CLIENT_EMAIL` - Service account email (e.g., `firebase-adminsdk-xxxxx@project-id.iam.gserviceaccount.com`)
+- `FIREBASE_ADMIN_PRIVATE_KEY` - Service account private key (with `\n` for newlines)
+
+**How to obtain:**
+1. Go to Firebase Console → Project Settings → Service accounts
+2. Click "Generate new private key"
+3. Extract the values from the downloaded JSON file
+
+```typescript
+// lib/firebaseAdmin.ts
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { getAuth, Auth } from 'firebase-admin/auth';
+
+function getFirebaseAdminApp(): App {
+  if (getApps().length > 0) {
+    return getApps()[0];
+  }
+
+  return initializeApp({
+    credential: cert({
+      projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    }),
+  });
+}
+
+export function getAdminAuth(): Auth {
+  return getAuth(getFirebaseAdminApp());
+}
+
+export async function verifyIdToken(idToken: string) {
+  return getAdminAuth().verifyIdToken(idToken);
+}
 ```
 
 ### Firestore Schema
@@ -785,6 +867,15 @@ _For any_ file upload, the screenshot input validator SHALL accept the file if a
 _For any_ valid HTML code block and CSS code block, when formatted as a Claude API response with markdown code blocks (`html and `css markers), the code extractor SHALL extract the original HTML and CSS content exactly.
 
 **Validates: Requirements 1.3, 1.7, 2.5**
+
+### Property 3a: Truncated Response Code Extraction
+
+_For any_ truncated Claude API response containing an HTML code block without closing backticks (e.g., streaming cut off mid-generation), the code extractor SHALL:
+- Extract the HTML content from the opening ` ```html ` marker to the end of available content or next code block marker
+- Extract CSS from a separate CSS block if present, or from inline `<style>` tags within the HTML
+- Return a result with `truncated: true` flag indicating partial extraction
+
+**Validates: Requirements 20.8, 20.9**
 
 ### Property 4: Generated Website Object Completeness
 

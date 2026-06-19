@@ -12,3 +12,6 @@ export {
   getAndClearRedirectUrl,
 } from './ProtectedRoute';
 export type { ProtectedRouteProps } from './ProtectedRoute';
+
+export { UserProfileMenu } from './UserProfileMenu';
+export type { UserProfileMenuProps } from './UserProfileMenu';

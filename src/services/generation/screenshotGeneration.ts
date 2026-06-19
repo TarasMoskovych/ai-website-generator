@@ -3,6 +3,7 @@
  *
  * Implements screenshot-based website generation using Claude's vision capabilities.
  * Sends images as base64 to the Claude API with the SCREENSHOT_GENERATION_PROMPT.
+ * Supports both streaming and non-streaming modes.
  *
  * Requirements: 2.4, 2.5, 2.9, 17.1-17.7, 18.1-18.4
  */
@@ -47,6 +48,156 @@ export class ScreenshotGenerationError extends Error {
   ) {
     super(message);
     this.name = 'ScreenshotGenerationError';
+  }
+}
+
+/**
+ * Stream event types for real-time updates
+ */
+export type StreamEventType = 'start' | 'text' | 'done' | 'error';
+
+export interface StreamEvent {
+  type: StreamEventType;
+  content?: string;
+  result?: GenerationResult;
+  error?: string;
+}
+
+/**
+ * Generates website HTML and CSS from a screenshot image using Claude's vision capabilities with streaming.
+ *
+ * This function streams the response in real-time, allowing the client to see
+ * the content as it's being generated.
+ *
+ * @param imageBase64 - The base64-encoded image data (without data URL prefix)
+ * @param mimeType - The MIME type of the image (image/png, image/jpeg, or image/webp)
+ * @param signal - Optional AbortSignal for request cancellation
+ * @returns AsyncGenerator yielding StreamEvents
+ */
+export async function* generateWebsiteFromImageStream(
+  imageBase64: string,
+  mimeType: ImageMimeType,
+  signal?: AbortSignal
+): AsyncGenerator<StreamEvent> {
+  // Create an AbortController to handle the 60-second timeout
+  const controller = new AbortController();
+
+  // Set up timeout handler (60 seconds)
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, TIMEOUTS.GENERATION);
+
+  // If an external signal is provided, link it to our controller
+  if (signal) {
+    if (signal.aborted) {
+      clearTimeout(timeoutId);
+      yield { type: 'error', error: 'Request was cancelled' };
+      return;
+    }
+
+    signal.addEventListener('abort', () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    });
+  }
+
+  try {
+    // Emit start event
+    yield { type: 'start' };
+
+    let fullContent = '';
+
+    // Stream from Claude API with vision
+    const stream = await anthropic.messages.stream(
+      {
+        model: CLAUDE_MODEL,
+        max_tokens: MAX_TOKENS,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: mimeType,
+                  data: imageBase64,
+                },
+              },
+              {
+                type: 'text',
+                text: SCREENSHOT_GENERATION_PROMPT,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        signal: controller.signal,
+      }
+    );
+
+    // Process stream events
+    for await (const event of stream) {
+      if (event.type === 'content_block_delta') {
+        const delta = event.delta;
+        if ('text' in delta) {
+          fullContent += delta.text;
+          yield { type: 'text', content: delta.text };
+        }
+      }
+    }
+
+    // Clear timeout on successful completion
+    clearTimeout(timeoutId);
+
+    // Extract HTML, CSS, and title from the complete response
+    const extractionResult = extractCodeFromResponse(fullContent);
+
+    if (!extractionResult.success) {
+      yield { type: 'error', error: extractionResult.error || 'Failed to extract code from response' };
+      return;
+    }
+
+    // Emit done event with final result
+    yield {
+      type: 'done',
+      result: {
+        html: extractionResult.html,
+        css: extractionResult.css,
+        title: extractionResult.title,
+      },
+    };
+  } catch (error) {
+    // Clear timeout on error
+    clearTimeout(timeoutId);
+
+    // Handle abort/timeout errors
+    if (error instanceof Error) {
+      if (error.name === 'AbortError' || controller.signal.aborted) {
+        if (signal?.aborted) {
+          yield { type: 'error', error: 'Generation was cancelled' };
+        } else {
+          yield { type: 'error', error: 'Request timed out after 2 minutes. Please try again with a simpler image.' };
+        }
+        return;
+      }
+
+      if (error.message.includes('rate_limit')) {
+        yield { type: 'error', error: 'Rate limit exceeded. Please wait a few minutes and try again.' };
+        return;
+      }
+
+      if (error.message.includes('network') || error.message.includes('fetch')) {
+        yield { type: 'error', error: 'Unable to connect. Please check your internet connection.' };
+        return;
+      }
+
+      yield { type: 'error', error: `Failed to generate website from screenshot: ${error.message}` };
+      return;
+    }
+
+    yield { type: 'error', error: 'Failed to generate website from screenshot: An unknown error occurred' };
   }
 }
 
@@ -143,7 +294,7 @@ export async function generateWebsiteFromImage(
           );
         }
         throw new ScreenshotGenerationError(
-          'Request timed out after 60 seconds. Please try again.',
+          'Request timed out after 2 minutes. Please try again with a simpler image.',
           ScreenshotGenerationErrorCode.TIMEOUT
         );
       }

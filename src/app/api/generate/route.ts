@@ -19,7 +19,15 @@ import {
   ScreenshotGenerationError,
   ImageMimeType,
 } from '@/services/generation/screenshotGeneration';
+import { processImageForClaude } from '@/services/imageProcessor';
 import { ErrorCode } from '@/types/error';
+
+/**
+ * Maximum duration for this route in seconds.
+ * Vercel Hobby: up to 60s, Pro: up to 300s (5 min)
+ * Set to 60s for Hobby plan compatibility.
+ */
+export const maxDuration = 60;
 
 /**
  * Request types for website generation
@@ -90,6 +98,9 @@ async function verifyAuthToken(request: NextRequest): Promise<string | null> {
   }
 
   const token = authHeader.slice(7); // Remove 'Bearer ' prefix
+
+
+  console.log(token);
 
   try {
     const decodedToken = await verifyIdToken(token);
@@ -317,9 +328,21 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     try {
-      const result = await generateWebsiteFromImage(
+      // Process image to ensure it doesn't exceed Claude's dimension limit
+      const processedImage = await processImageForClaude(
         body.image,
         body.mimeType as ImageMimeType
+      );
+
+      if (processedImage.wasResized) {
+        console.log(
+          `Image resized from ${processedImage.originalWidth}x${processedImage.originalHeight} to ${processedImage.finalWidth}x${processedImage.finalHeight}`
+        );
+      }
+
+      const result = await generateWebsiteFromImage(
+        processedImage.base64,
+        processedImage.mimeType
       );
 
       const response: GenerateSuccessResponse = {

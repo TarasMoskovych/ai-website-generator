@@ -20,6 +20,8 @@ export const VALIDATION = {
     MIN_WIDTH: 200,
     /** Minimum image height in pixels */
     MIN_HEIGHT: 200,
+    /** Maximum image dimension in pixels (Claude API limit is 8000px) */
+    MAX_DIMENSION: 7680,
     /** Allowed MIME types for screenshots */
     ALLOWED_TYPES: ['image/png', 'image/jpeg', 'image/webp'] as const,
   },
@@ -35,8 +37,8 @@ export const VALIDATION = {
  * Timeout durations in milliseconds
  */
 export const TIMEOUTS = {
-  /** Maximum time for website generation (60 seconds) */
-  GENERATION: 60_000,
+  /** Maximum time for website generation (120 seconds for complex screenshots) */
+  GENERATION: 120_000,
   /** Maximum time for file download generation (5 seconds) */
   DOWNLOAD: 5_000,
   /** Maximum time for cancel operation (5 seconds) */

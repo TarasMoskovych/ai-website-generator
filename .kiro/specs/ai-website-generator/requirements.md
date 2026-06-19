@@ -273,3 +273,64 @@ This document defines the requirements for an AI-powered website generator appli
 4. THE application dark theme SHALL use a consistent color palette across all pages and components
 5. THE application SHALL ensure all UI elements maintain sufficient color contrast in both light and dark themes
 6. THE code editor component SHALL support dark theme with appropriate syntax highlighting colors
+
+### Requirement 20: Real-Time Streaming Generation
+
+**User Story:** As a user, I want to see the website code being generated in real-time, so that I can monitor progress and know the system is actively working.
+
+#### Acceptance Criteria
+
+1. WHEN website generation begins for text input, THE Website_Generator SHALL stream the response from Claude API in real-time
+2. WHEN website generation begins for screenshot input, THE Website_Generator SHALL stream the response from Claude API in real-time
+3. WHILE streaming is in progress, THE loading indicator SHALL display a collapsible output preview panel showing the content as it is received
+4. THE output preview panel SHALL display statistics including line count and character count
+5. THE output preview panel SHALL be expanded by default and allow the user to collapse/expand it
+6. THE streaming preview SHALL show the last 500 characters of generated content to provide context without overwhelming the UI
+7. THE generation stage indicator SHALL update automatically based on content patterns (e.g., detecting CSS block start, title extraction)
+8. IF the streaming response is truncated (incomplete code blocks without closing backticks), THE code extractor SHALL attempt to extract usable HTML and CSS content from the partial response
+9. WHEN extracting from truncated responses, THE code extractor SHALL also extract inline CSS from `<style>` tags within the HTML if no separate CSS block is found
+
+### Requirement 21: Code Panel Collapse/Expand
+
+**User Story:** As a user, I want to collapse and expand the code editor panel, so that I can focus on the preview when needed.
+
+#### Acceptance Criteria
+
+1. THE website preview/editor page SHALL display a header above the code editor panel with a collapse button
+2. WHEN a user clicks the collapse button, THE code panel SHALL animate closed and the preview panel SHALL expand to fill the available space
+3. WHEN the code panel is collapsed, THE application SHALL display a vertical tab with a code icon and "Code" label
+4. WHEN a user clicks the vertical tab, THE code panel SHALL animate open and restore its previous width
+5. THE collapse/expand animation SHALL complete within 300 milliseconds
+
+### Requirement 22: Fullscreen Preview Mode
+
+**User Story:** As a user, I want to view the generated website in fullscreen mode, so that I can see exactly how it will look at full browser size.
+
+#### Acceptance Criteria
+
+1. THE preview panel SHALL display a fullscreen button (maximize icon) in the top-right corner
+2. WHEN a user clicks the fullscreen button, THE application SHALL display the generated website in a fullscreen modal overlay
+3. THE fullscreen preview SHALL render the website without any viewport constraints at full browser size
+4. THE fullscreen modal SHALL display the website title and an "Exit Fullscreen" button in a header bar
+5. WHEN a user clicks "Exit Fullscreen", THE application SHALL close the modal and return to the preview/editor view
+6. THE fullscreen preview SHALL use the same sanitized HTML rendering as the regular preview for security
+
+### Requirement 23: Public Website Showcase
+
+**User Story:** As a user, I want to share my generated websites publicly so that other users can discover and get inspired by my creations.
+
+#### Acceptance Criteria
+
+1. THE website preview/editor page SHALL display a "Share to Showcase" toggle or button that allows the user to make their website publicly visible
+2. WHEN a user enables public sharing, THE Website_Repository SHALL update the website's `isShowcased` field to true and record the `showcasedAt` timestamp
+3. WHEN a user disables public sharing, THE Website_Repository SHALL update the website's `isShowcased` field to false
+4. THE login page SHALL display a "Community Showcase" section below the sign-in form showing recently shared public websites
+5. THE Community Showcase section on the login page SHALL display up to 6 showcased websites as a preview with a "View All" link
+6. THE application SHALL provide a dedicated /showcase page displaying all showcased websites with pagination (12 per page)
+7. THE showcase pages SHALL sort websites by the date they were showcased in descending order (newest first)
+8. WHEN a visitor clicks on a showcased website, THE application SHALL open the public view page (/view/[id]) in a new browser tab
+9. THE showcased website cards SHALL display the thumbnail, title, and creator's display name for attribution
+10. IF no showcased websites exist, THE Community Showcase section SHALL display a message encouraging users to share their creations
+11. THE Website_Repository SHALL only include websites where both `isPublic` is true AND `isShowcased` is true in the showcase query
+12. THE dashboard page SHALL display a visual indicator (e.g., globe icon or "Shared" badge) on websites that are currently showcased
+13. THE /showcase page SHALL be accessible without authentication to allow discovery by visitors
