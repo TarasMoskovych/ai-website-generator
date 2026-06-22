@@ -233,7 +233,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Label left as "Original" and right as "Beautified"
     - _Requirements: 7.1, 7.2_
 
-  - [~] 12.2 Implement synchronized scrolling
+  - [x] 12.2 Implement synchronized scrolling
     - Synchronize scroll position between both iframes
     - _Requirements: 7.3_
 
@@ -241,7 +241,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - **Property 15: Synchronized Scroll Behavior**
     - **Validates: Requirements 7.3**
 
-  - [~] 12.4 Implement viewport mode controls
+  - [x] 12.4 Implement viewport mode controls
     - Support desktop, tablet, mobile viewport modes
     - Apply to both previews simultaneously
     - _Requirements: 7.4_
@@ -250,12 +250,12 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - **Property 16: Viewport Mode Applies to Both Previews**
     - **Validates: Requirements 7.4**
 
-  - [~] 12.6 Implement Accept/Reject functionality
+  - [x] 12.6 Implement Accept/Reject functionality
     - Add "Accept Changes" and "Reject Changes" buttons
     - Update code editor on accept, preserve original on reject
     - _Requirements: 7.5, 7.6, 7.7, 7.8, 7.9_
 
-  - [~] 12.7 Implement comparison mode toggle
+  - [x] 12.7 Implement comparison mode toggle
     - Support side-by-side and overlay comparison modes
     - _Requirements: 7.10_
 
@@ -267,12 +267,12 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Handle save errors with retry option
     - _Requirements: 8.1, 8.2, 8.3, 8.7, 8.8_
 
-  - [~] 13.2 Implement "Replace Original" logic
+  - [x] 13.2 Implement "Replace Original" logic
     - Update existing website document with beautified content
     - Regenerate thumbnail
     - _Requirements: 8.3_
 
-  - [~] 13.3 Implement "Save as New" logic
+  - [x] 13.3 Implement "Save as New" logic
     - Create new website document with beautified content
     - Append " (Beautified)" to original title
     - Navigate to new website's preview page
@@ -292,11 +292,11 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Parse error: "Failed to process beautified content. Please try again."
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
 
-  - [~] 14.2 Write property test for error message mapping (Property 19)
+  - [x] 14.2 Write property test for error message mapping (Property 19)
     - **Property 19: Error Type to Message Mapping**
     - **Validates: Requirements 10.1, 10.2, 10.3**
 
-  - [~] 14.3 Implement error recovery UI
+  - [x] 14.3 Implement error recovery UI
     - Add "Try Again" and "Dismiss" buttons
     - Preserve user edits on error
     - _Requirements: 10.6, 10.7, 10.8_

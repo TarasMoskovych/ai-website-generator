@@ -391,6 +391,11 @@ export function PreviewComparison({
   }, [handleScroll]);
 
   /**
+   * Ref to store cleanup function for scroll sync listeners
+   */
+  const scrollCleanupRef = useRef<(() => void) | null>(null);
+
+  /**
    * Initialize iframes and setup scroll sync
    */
   useEffect(() => {
@@ -399,22 +404,39 @@ export function PreviewComparison({
 
     // Setup scroll sync after a short delay to ensure iframes are ready
     const timeoutId = setTimeout(() => {
-      setupScrollSync();
+      // Cleanup previous scroll listeners before setting up new ones
+      if (scrollCleanupRef.current) {
+        scrollCleanupRef.current();
+      }
+      scrollCleanupRef.current = setupScrollSync() || null;
     }, 100);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      // Cleanup scroll listeners on unmount
+      if (scrollCleanupRef.current) {
+        scrollCleanupRef.current();
+        scrollCleanupRef.current = null;
+      }
+    };
   }, [originalContent, beautifiedContent, writeToIframe, setupScrollSync]);
 
   /**
-   * Re-setup scroll sync when viewport changes
+   * Re-setup scroll sync when viewport or comparison mode changes
    */
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      setupScrollSync();
+      // Cleanup previous scroll listeners before setting up new ones
+      if (scrollCleanupRef.current) {
+        scrollCleanupRef.current();
+      }
+      scrollCleanupRef.current = setupScrollSync() || null;
     }, 100);
 
-    return () => clearTimeout(timeoutId);
-  }, [viewportMode, setupScrollSync]);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [viewportMode, comparisonMode, setupScrollSync]);
 
   /**
    * Handle overlay slider drag

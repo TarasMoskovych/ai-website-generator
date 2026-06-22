@@ -9,6 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import * as fc from 'fast-check';
 import {
   BEAUTIFY_ERROR_CODES,
   BEAUTIFY_ERROR_MESSAGES,
@@ -22,6 +23,7 @@ import {
   isBeautifyErrorRetryable,
   getBeautifyErrorCategory,
   type BeautifyErrorCode,
+  type BeautifyErrorCategory,
 } from './beautifyErrors';
 
 describe('beautifyErrors', () => {
@@ -334,6 +336,285 @@ describe('beautifyErrors', () => {
       expect(getBeautifyErrorCategory('BEAUTIFY_VALIDATION_ERROR')).toBe('validation');
       expect(getBeautifyErrorCategory('BEAUTIFY_RATE_LIMIT_ERROR')).toBe('ai');
       expect(getBeautifyErrorCategory('BEAUTIFY_AUTH_ERROR')).toBe('general');
+    });
+  });
+
+  /**
+   * Property-Based Tests for Error Message Mapping (Property 19)
+   *
+   * **Validates: Requirements 10.1, 10.2, 10.3**
+   *
+   * Property 19: Every error code should map to a non-empty user-friendly message
+   *
+   * These tests use fast-check to verify that error message mapping is:
+   * 1. Complete: Every error code maps to a non-empty message
+   * 2. Consistent: Error mapping is deterministic
+   * 3. Valid: All categories are from the defined set
+   */
+  describe('Property-Based Tests - Error Message Mapping (Property 19)', () => {
+    // Get all error codes as an array for use in arbitraries
+    const ALL_ERROR_CODES = Object.values(BEAUTIFY_ERROR_CODES) as BeautifyErrorCode[];
+    const VALID_CATEGORIES: BeautifyErrorCategory[] = ['validation', 'network', 'ai', 'general'];
+
+    /**
+     * Property 19.1: Every error code maps to a non-empty user-friendly message
+     *
+     * For any error code in the system, the corresponding message must be:
+     * - A non-empty string
+     * - Non-whitespace only
+     *
+     * **Validates: Requirements 10.1, 10.2, 10.3**
+     */
+    it('every error code should map to a non-empty user-friendly message (Property 19)', () => {
+      fc.assert(
+        fc.property(
+          // Generate any valid error code from the set
+          fc.constantFrom(...ALL_ERROR_CODES),
+          (errorCode) => {
+            const message = getBeautifyErrorMessage(errorCode);
+
+            // Property: Message must be a non-empty string
+            expect(typeof message).toBe('string');
+            expect(message.length).toBeGreaterThan(0);
+            expect(message.trim().length).toBeGreaterThan(0);
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Property 19.2: Error mapping is consistent and deterministic
+     *
+     * For any error code, calling getBeautifyErrorMessage multiple times
+     * should always return the exact same message.
+     *
+     * **Validates: Requirements 10.1, 10.2, 10.3**
+     */
+    it('error mapping should be consistent and deterministic (Property 19)', () => {
+      fc.assert(
+        fc.property(
+          // Generate any valid error code
+          fc.constantFrom(...ALL_ERROR_CODES),
+          // Generate a number of calls to make (2-10)
+          fc.integer({ min: 2, max: 10 }),
+          (errorCode, numCalls) => {
+            const firstMessage = getBeautifyErrorMessage(errorCode);
+
+            // Property: Subsequent calls should return the exact same message
+            for (let i = 0; i < numCalls; i++) {
+              expect(getBeautifyErrorMessage(errorCode)).toBe(firstMessage);
+            }
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Property 19.3: All error categories are valid
+     *
+     * For any error code, the category must be one of the defined categories.
+     *
+     * **Validates: Requirements 10.1, 10.2, 10.3**
+     */
+    it('all error categories should be valid (Property 19)', () => {
+      fc.assert(
+        fc.property(
+          // Generate any valid error code
+          fc.constantFrom(...ALL_ERROR_CODES),
+          (errorCode) => {
+            const category = getBeautifyErrorCategory(errorCode);
+
+            // Property: Category must be one of the valid categories
+            expect(VALID_CATEGORIES).toContain(category);
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Property 19.4: createBeautifyError produces complete error objects
+     *
+     * For any error code, creating a BeautifyError should produce an object
+     * with all required fields properly populated.
+     *
+     * **Validates: Requirements 10.1, 10.2, 10.3**
+     */
+    it('createBeautifyError should produce complete error objects (Property 19)', () => {
+      fc.assert(
+        fc.property(
+          // Generate any valid error code
+          fc.constantFrom(...ALL_ERROR_CODES),
+          (errorCode) => {
+            const error = createBeautifyError(errorCode);
+
+            // Property: Error object must have all required fields
+            expect(error.code).toBe(errorCode);
+            expect(typeof error.category).toBe('string');
+            expect(VALID_CATEGORIES).toContain(error.category);
+            expect(typeof error.message).toBe('string');
+            expect(error.message.length).toBeGreaterThan(0);
+            expect(typeof error.isRetryable).toBe('boolean');
+            expect(typeof error.suggestedAction).toBe('string');
+            expect(error.suggestedAction!.length).toBeGreaterThan(0);
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Property 19.5: getBeautifyError produces valid errors for any error code
+     *
+     * For any error code passed directly to getBeautifyError, it should
+     * produce a valid BeautifyError object.
+     *
+     * **Validates: Requirements 10.1, 10.2, 10.3**
+     */
+    it('getBeautifyError should produce valid errors for any error code (Property 19)', () => {
+      fc.assert(
+        fc.property(
+          // Generate any valid error code
+          fc.constantFrom(...ALL_ERROR_CODES),
+          // Optional details string
+          fc.option(fc.string({ minLength: 0, maxLength: 200 }), { nil: undefined }),
+          (errorCode, details) => {
+            const error = getBeautifyError(errorCode, details);
+
+            // Property: Error object must be valid and consistent
+            expect(error.code).toBe(errorCode);
+            expect(error.message).toBe(BEAUTIFY_ERROR_MESSAGES[errorCode]);
+            expect(error.category).toBe(BEAUTIFY_ERROR_CATEGORIES[errorCode]);
+            expect(error.isRetryable).toBe(BEAUTIFY_ERROR_RETRYABLE[errorCode]);
+
+            // If details were provided, they should be included
+            if (details !== undefined) {
+              expect(error.details).toBe(details);
+            }
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Property 19.6: Required error types have specific messages
+     *
+     * Network, timeout, and authentication errors must have their
+     * specific user-friendly messages as per requirements.
+     *
+     * **Validates: Requirements 10.1 (network), 10.2 (timeout), 10.3 (auth)**
+     */
+    it('required error types should have specific user-friendly messages (Property 19)', () => {
+      // Define the required error type to message mappings
+      const requiredMappings: Array<[BeautifyErrorCode, string]> = [
+        ['BEAUTIFY_NETWORK_ERROR', 'Unable to connect. Please check your internet connection.'],
+        ['BEAUTIFY_TIMEOUT_ERROR', 'Beautification timed out. The website may be too complex. Please try again.'],
+        ['BEAUTIFY_AUTH_ERROR', 'Session expired. Please refresh the page and try again.'],
+      ];
+
+      fc.assert(
+        fc.property(
+          // Generate one of the required error type mappings
+          fc.constantFrom(...requiredMappings),
+          ([errorCode, expectedMessage]) => {
+            const message = getBeautifyErrorMessage(errorCode);
+
+            // Property: Each required error type must have its exact message
+            expect(message).toBe(expectedMessage);
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Property 19.7: Retryable status is boolean for all error codes
+     *
+     * For any error code, the retryable status must be a boolean value.
+     *
+     * **Validates: Requirements 10.1, 10.2, 10.3**
+     */
+    it('retryable status should be boolean for all error codes (Property 19)', () => {
+      fc.assert(
+        fc.property(
+          // Generate any valid error code
+          fc.constantFrom(...ALL_ERROR_CODES),
+          (errorCode) => {
+            const isRetryable = isBeautifyErrorRetryable(errorCode);
+
+            // Property: Must be a boolean
+            expect(typeof isRetryable).toBe('boolean');
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Property 19.8: All error codes have defined actions
+     *
+     * For any error code, there must be a non-empty suggested action.
+     *
+     * **Validates: Requirements 10.1, 10.2, 10.3**
+     */
+    it('all error codes should have defined suggested actions (Property 19)', () => {
+      fc.assert(
+        fc.property(
+          // Generate any valid error code
+          fc.constantFrom(...ALL_ERROR_CODES),
+          (errorCode) => {
+            const action = BEAUTIFY_ERROR_ACTIONS[errorCode];
+
+            // Property: Action must be a non-empty string
+            expect(typeof action).toBe('string');
+            expect(action.length).toBeGreaterThan(0);
+            expect(action.trim().length).toBeGreaterThan(0);
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Property 19.9: Error message mapping completeness
+     *
+     * The set of error codes with messages must exactly match
+     * the set of defined error codes.
+     *
+     * **Validates: Requirements 10.1, 10.2, 10.3**
+     */
+    it('error message mapping should be complete (Property 19)', () => {
+      fc.assert(
+        fc.property(
+          // Use a constant to run a single verification
+          fc.constant(null),
+          () => {
+            const definedCodes = new Set(ALL_ERROR_CODES);
+            const messagesKeys = new Set(Object.keys(BEAUTIFY_ERROR_MESSAGES));
+            const categoriesKeys = new Set(Object.keys(BEAUTIFY_ERROR_CATEGORIES));
+            const retryableKeys = new Set(Object.keys(BEAUTIFY_ERROR_RETRYABLE));
+            const actionsKeys = new Set(Object.keys(BEAUTIFY_ERROR_ACTIONS));
+
+            // Property: All mappings must cover exactly the same set of error codes
+            expect(messagesKeys.size).toBe(definedCodes.size);
+            expect(categoriesKeys.size).toBe(definedCodes.size);
+            expect(retryableKeys.size).toBe(definedCodes.size);
+            expect(actionsKeys.size).toBe(definedCodes.size);
+
+            // Verify each defined code exists in all mappings
+            for (const code of definedCodes) {
+              expect(messagesKeys.has(code)).toBe(true);
+              expect(categoriesKeys.has(code)).toBe(true);
+              expect(retryableKeys.has(code)).toBe(true);
+              expect(actionsKeys.has(code)).toBe(true);
+            }
+          }
+        ),
+        { numRuns: 100 }
+      );
     });
   });
 });

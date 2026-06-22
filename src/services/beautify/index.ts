@@ -2,7 +2,7 @@
  * Beautify Services Index
  * Re-exports all beautify-related services for convenient importing
  *
- * Validates: Requirements 2.1, 3.1
+ * Validates: Requirements 2.1, 3.1, 8.3, 8.4, 8.5
  */
 
 // Completeness Detector Service
@@ -21,6 +21,19 @@ export {
   beautifyWebsiteStream,
   default as beautifyService,
 } from './beautifyService';
+
+// Beautify Save Service
+export {
+  replaceOriginal,
+  saveAsNew,
+  default as beautifySaveService,
+} from './beautifySaveService';
+export type {
+  SaveResult,
+  ReplaceOriginalOptions,
+  SaveAsNewOptions,
+  BeautifySaveService,
+} from './beautifySaveService';
 
 // Beautify Prompts
 export {
