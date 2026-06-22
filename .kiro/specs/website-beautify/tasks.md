@@ -26,11 +26,11 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Implement marker detection logic that classifies as "complete" when marker present
     - _Requirements: 1.2, 1.3_
 
-  - [~] 2.2 Write property test for generation marker detection (Property 4)
+  - [x] 2.2 Write property test for generation marker detection (Property 4)
     - **Property 4: Generation Marker Implies Complete Classification**
     - **Validates: Requirements 1.2, 1.3**
 
-  - [~] 2.3 Implement structural element detection
+  - [x] 2.3 Implement structural element detection
     - Add detection for header, main, and footer elements
     - Classify as incomplete when structural elements are missing
     - _Requirements: 1.5, 1.6_
@@ -147,7 +147,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 7. Update website repository for originalPrompt storage
-  - [~] 7.1 Update websiteRepository to store originalPrompt
+  - [x] 7.1 Update websiteRepository to store originalPrompt
     - Modify `src/services/websiteRepository.ts` to handle originalPrompt field
     - Update create and update methods to include originalPrompt
     - _Requirements: 0.1, 0.4_

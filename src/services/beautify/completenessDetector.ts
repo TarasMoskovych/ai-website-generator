@@ -26,6 +26,14 @@ import type { CompletenessResult, StructuralElement } from '@/types/beautify';
 export const GENERATION_MARKER = '<!-- GENERATION_COMPLETE -->';
 
 /**
+ * List of required structural elements for a complete webpage.
+ * These elements form the basic structure of a well-formed HTML page.
+ *
+ * Validates: Requirement 1.5 - Structural_Elements definition
+ */
+export const STRUCTURAL_ELEMENTS: StructuralElement[] = ['header', 'main', 'footer'];
+
+/**
  * Checks if the HTML content contains the generation marker.
  *
  * The generation marker (`<!-- GENERATION_COMPLETE -->`) indicates that
@@ -48,6 +56,43 @@ export function hasGenerationMarker(html: string): boolean {
     return false;
   }
   return html.includes(GENERATION_MARKER);
+}
+
+/**
+ * Detects missing structural elements in the HTML content.
+ *
+ * Checks for the presence of `<header>`, `<main>`, and `<footer>` tags
+ * using case-insensitive matching.
+ *
+ * @param html - The HTML content to analyze
+ * @returns Array of missing structural elements
+ *
+ * Validates: Requirement 1.5 - THE Completeness_Detector SHALL check for the presence
+ * of Structural_Elements: header section, main content section, and footer section
+ *
+ * @example
+ * ```typescript
+ * const html = '<html><body><main>Content</main></body></html>';
+ * const missing = detectMissingStructuralElements(html); // ['header', 'footer']
+ * ```
+ */
+export function detectMissingStructuralElements(html: string): StructuralElement[] {
+  if (!html || typeof html !== 'string') {
+    return [...STRUCTURAL_ELEMENTS];
+  }
+
+  const missingElements: StructuralElement[] = [];
+
+  for (const element of STRUCTURAL_ELEMENTS) {
+    // Create case-insensitive regex to match opening tag
+    // Matches <header>, <main>, <footer> with optional attributes
+    const tagPattern = new RegExp(`<${element}(\\s|>|/>)`, 'i');
+    if (!tagPattern.test(html)) {
+      missingElements.push(element);
+    }
+  }
+
+  return missingElements;
 }
 
 /**
@@ -95,12 +140,30 @@ export function detectCompleteness(html: string, css: string): CompletenessResul
     };
   }
 
-  // Marker not present - will be extended in subsequent tasks to perform
-  // structural analysis and truncation detection
-  // For now, mark as incomplete when marker is absent
+  // Marker not present - perform structural analysis
+  // Validates: Requirement 1.4 - IF the Generation_Marker is absent,
+  // THEN THE Completeness_Detector SHALL perform structural analysis
+
+  // Check for missing structural elements
+  // Validates: Requirement 1.5, 1.6 - Check for structural elements and classify as incomplete if missing
+  const detectedMissingElements = detectMissingStructuralElements(html);
+  missingElements.push(...detectedMissingElements);
+
+  // Add descriptive issues for each missing element
+  for (const element of detectedMissingElements) {
+    issues.push(`Missing <${element}> element`);
+  }
+
+  // Determine completeness based on detected issues
+  // Validates: Requirement 1.6 - IF any Structural_Elements are missing,
+  // THEN THE Completeness_Detector SHALL classify the website as "incomplete"
+  const hasStructuralIssues = missingElements.length > 0;
+  const hasTruncationIssues = truncationIssues.length > 0;
+  const isComplete = !hasStructuralIssues && !hasTruncationIssues;
+
   return {
-    isComplete: false,
-    status: 'incomplete',
+    isComplete,
+    status: isComplete ? 'complete' : 'incomplete',
     issues,
     hasGenerationMarker: false,
     missingElements,
