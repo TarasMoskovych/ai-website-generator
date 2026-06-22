@@ -79,13 +79,13 @@ This implementation adds a Community Showcase navigation link to the dashboard p
     - Test minimum touch target sizing classes (Req 4.4)
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 5. Checkpoint - Verify layout positioning
-  - [~] 5.1 Verify DOM order in dashboard header
+- [x] 5. Checkpoint - Verify layout positioning
+  - [x] 5.1 Verify DOM order in dashboard header
     - Confirm link appears between title section and New Website button
     - Test that page structure matches design specification
     - _Requirements: 1.4_
 
-  - [~] 5.2 Write integration test for dashboard page
+  - [x] 5.2 Write integration test for dashboard page
     - Test authenticated user sees showcase link on dashboard
     - Test navigation flow from dashboard to showcase page
     - _Requirements: 1.1, 2.3_

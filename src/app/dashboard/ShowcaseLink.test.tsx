@@ -75,6 +75,122 @@ describe('ShowcaseLink', () => {
   });
 
   /**
+   * DOM Order Tests
+   * Validates: Requirement 1.4
+   */
+  describe('DOM Order in Dashboard Header (Requirement 1.4)', () => {
+    /**
+     * Tests that ShowcaseLink appears between title section and New Website button
+     * Validates: Requirement 1.4 - Positioned between page title and New Website action button
+     */
+    it('appears between title section and New Website button in DOM order (Req 1.4)', async () => {
+      render(<DashboardPage />);
+
+      // Wait for the page to render
+      const showcaseLink = await screen.findByRole('link', { name: /community showcase/i });
+      const newWebsiteButton = await screen.findByRole('link', { name: /new website/i });
+      const title = await screen.findByRole('heading', { name: /my websites/i });
+
+      // Get the common ancestor (the action buttons container or header)
+      const headerSection = title.closest('.mb-8');
+      expect(headerSection).toBeInTheDocument();
+
+      // Get all elements in the header for comparison
+      const allLinksInHeader = headerSection?.querySelectorAll('a');
+      expect(allLinksInHeader).toBeDefined();
+      expect(allLinksInHeader!.length).toBeGreaterThanOrEqual(2);
+
+      // Find indices of showcase link and new website button
+      const linksArray = Array.from(allLinksInHeader!);
+      const showcaseLinkIndex = linksArray.findIndex(link =>
+        link.getAttribute('href') === '/showcase'
+      );
+      const newWebsiteIndex = linksArray.findIndex(link =>
+        link.getAttribute('href') === '/generate'
+      );
+
+      // Verify ShowcaseLink comes before New Website button
+      expect(showcaseLinkIndex).toBeGreaterThanOrEqual(0);
+      expect(newWebsiteIndex).toBeGreaterThanOrEqual(0);
+      expect(showcaseLinkIndex).toBeLessThan(newWebsiteIndex);
+    });
+
+    /**
+     * Tests that the page structure matches design specification
+     * Validates: Requirement 1.4 - Dashboard header layout structure
+     */
+    it('has correct page header structure with three main sections (Req 1.4)', async () => {
+      render(<DashboardPage />);
+
+      // Wait for the page to render
+      await screen.findByRole('link', { name: /community showcase/i });
+
+      // Verify title section exists
+      const title = screen.getByRole('heading', { name: /my websites/i });
+      expect(title).toBeInTheDocument();
+
+      // Verify subtitle text exists
+      const subtitle = screen.getByText(/manage and view your generated websites/i);
+      expect(subtitle).toBeInTheDocument();
+
+      // Verify ShowcaseLink exists with correct href
+      const showcaseLink = screen.getByRole('link', { name: /community showcase/i });
+      expect(showcaseLink).toHaveAttribute('href', '/showcase');
+
+      // Verify New Website button exists with correct href
+      const newWebsiteButton = screen.getByRole('link', { name: /new website/i });
+      expect(newWebsiteButton).toHaveAttribute('href', '/generate');
+    });
+
+    /**
+     * Tests that ShowcaseLink and New Website button are in the same action buttons container
+     * Validates: Requirement 1.4 - Positioned in the dashboard header action area
+     */
+    it('places ShowcaseLink and New Website button in same action buttons container (Req 1.4)', async () => {
+      render(<DashboardPage />);
+
+      const showcaseLink = await screen.findByRole('link', { name: /community showcase/i });
+      const newWebsiteButton = await screen.findByRole('link', { name: /new website/i });
+
+      // Find the action buttons container (parent with flex and gap-2 classes)
+      const showcaseLinkParent = showcaseLink.parentElement;
+      const newWebsiteButtonParent = newWebsiteButton.parentElement;
+
+      // Both should share the same parent container
+      expect(showcaseLinkParent).toBe(newWebsiteButtonParent);
+
+      // Verify the container has flex layout
+      expect(showcaseLinkParent?.className).toContain('flex');
+      expect(showcaseLinkParent?.className).toContain('items-center');
+      expect(showcaseLinkParent?.className).toContain('gap-2');
+    });
+
+    /**
+     * Tests that title section is separate from action buttons section
+     * Validates: Requirement 1.4 - Layout separates title from actions
+     */
+    it('separates title section from action buttons section (Req 1.4)', async () => {
+      render(<DashboardPage />);
+
+      await screen.findByRole('link', { name: /community showcase/i });
+
+      // Get the title element
+      const title = screen.getByRole('heading', { name: /my websites/i });
+      const titleSection = title.parentElement;
+
+      // Get the showcase link and its parent (action buttons section)
+      const showcaseLink = screen.getByRole('link', { name: /community showcase/i });
+      const actionButtonsSection = showcaseLink.parentElement;
+
+      // Title section and action buttons section should be different elements
+      expect(titleSection).not.toBe(actionButtonsSection);
+
+      // Both should be children of the same header container
+      expect(titleSection?.parentElement).toBe(actionButtonsSection?.parentElement);
+    });
+  });
+
+  /**
    * Navigation Behavior Tests
    * Validates: Requirements 2.1, 2.2
    */
