@@ -6,14 +6,14 @@ This implementation adds a Community Showcase navigation link to the dashboard p
 
 ## Tasks
 
-- [ ] 1. Implement ShowcaseLink component in dashboard page
+- [x] 1. Implement ShowcaseLink component in dashboard page
   - [x] 1.1 Add GlobeIcon component to dashboard page
     - Create SVG icon component matching the showcase page pattern
     - Include `aria-hidden="true"` attribute for accessibility
     - Use consistent sizing with `className` prop support
     - _Requirements: 1.3, 3.4_
 
-  - [~] 1.2 Add ShowcaseLink component to dashboard page
+  - [x] 1.2 Add ShowcaseLink component to dashboard page
     - Create link component using Next.js Link or anchor element
     - Set `href="/showcase"` for navigation to showcase route
     - Apply secondary/link styling with `text-muted-foreground`
@@ -22,13 +22,13 @@ This implementation adds a Community Showcase navigation link to the dashboard p
     - Set `aria-label="Navigate to Community Showcase"` for screen readers
     - _Requirements: 1.1, 1.2, 1.5, 2.1, 2.2, 3.1, 3.2, 3.3_
 
-  - [~] 1.3 Implement responsive text behavior for ShowcaseLink
+  - [x] 1.3 Implement responsive text behavior for ShowcaseLink
     - Add full "Community Showcase" text visible on screens ≥640px (`hidden sm:inline`)
     - Add screen-reader-only text for mobile (`sr-only sm:hidden` or accessible via aria-label)
     - Ensure icon is always visible across all viewport sizes
     - _Requirements: 4.1, 4.2, 4.3_
 
-  - [~] 1.4 Add touch target sizing for mobile accessibility
+  - [x] 1.4 Add touch target sizing for mobile accessibility
     - Apply `min-h-[44px] min-w-[44px]` for WCAG touch target compliance
     - Include adequate padding with `px-3 py-2`
     - Ensure comfortable touch interaction on mobile devices

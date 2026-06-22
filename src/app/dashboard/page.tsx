@@ -71,6 +71,45 @@ function GlobeIcon({ className }: { className?: string }) {
 }
 
 /**
+ * ShowcaseLink Component
+ * Navigation link to the Community Showcase page
+ *
+ * Requirements:
+ * - 1.1: Display visible link in dashboard header
+ * - 1.2: Text clearly identifies destination
+ * - 1.3: Include visual icon (globe)
+ * - 1.5: Secondary/link styling
+ * - 2.1: Navigate to /showcase
+ * - 2.2: Open in same tab
+ * - 3.1: Keyboard accessible
+ * - 3.2: Descriptive accessible name
+ * - 3.3: Visible focus indicator
+ * - 4.1-4.3: Responsive text/icon display
+ * - 4.4: Minimum touch target size (44x44px for WCAG compliance)
+ */
+function ShowcaseLink() {
+  return (
+    <a
+      href="/showcase"
+      className="
+        inline-flex items-center justify-center gap-2
+        rounded-md px-3 py-2
+        min-h-[44px] min-w-[44px]
+        text-sm font-medium
+        text-muted-foreground
+        hover:bg-accent hover:text-accent-foreground
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+        transition-colors
+      "
+      aria-label="Navigate to Community Showcase"
+    >
+      <GlobeIcon className="h-4 w-4" />
+      <span className="hidden sm:inline">Community Showcase</span>
+    </a>
+  );
+}
+
+/**
  * Loading spinner component for the dashboard
  */
 function LoadingSpinner() {
@@ -422,41 +461,46 @@ export default function DashboardPage() {
         {/* Main content */}
         <main className="flex-1 relative">
           <div className="container mx-auto px-4 py-8">
-            {/* Page header */}
-            <div className="mb-8 flex items-center justify-between">
+            {/* Page header - Requirement 1.4: Position between title and New Website button */}
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-foreground">My Websites</h1>
                 <p className="text-muted-foreground text-sm mt-1">
                   Manage and view your generated websites
                 </p>
               </div>
-              <a
-                href="/generate"
-                className="
-                  inline-flex items-center justify-center gap-2
-                  rounded-md bg-primary px-4 py-2
-                  text-sm font-medium text-primary-foreground
-                  hover:bg-primary/90
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-                  transition-colors
-                "
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                  aria-hidden="true"
+              {/* Action buttons section */}
+              <div className="flex items-center gap-2">
+                {/* Showcase link - Requirement 1.4: Between title and New Website */}
+                <ShowcaseLink />
+                <a
+                  href="/generate"
+                  className="
+                    inline-flex items-center justify-center gap-2
+                    rounded-md bg-primary px-4 py-2
+                    text-sm font-medium text-primary-foreground
+                    hover:bg-primary/90
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+                    transition-colors
+                  "
                 >
-                  <path d="M12 5v14" />
-                  <path d="M5 12h14" />
-                </svg>
-                New Website
-              </a>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 5v14" />
+                    <path d="M5 12h14" />
+                  </svg>
+                  New Website
+                </a>
+              </div>
             </div>
 
             {/* Website grid */}
