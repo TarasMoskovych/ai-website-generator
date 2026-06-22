@@ -157,7 +157,6 @@ export {
   completenessDetector,
   // Beautify Service
   beautifyWebsiteStream,
-  ensureGenerationMarker,
   beautifyService,
   // Beautify Prompts
   COMPLETION_PROMPT,
