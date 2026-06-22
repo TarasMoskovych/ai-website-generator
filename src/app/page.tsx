@@ -24,7 +24,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth, getAndClearRedirectUrl } from '@/components/auth';
-import websiteRepository from '@/services/websiteRepository';
+import { useShowcaseWebsites } from '@/hooks/useShowcaseWebsites';
+import { GlobeIcon, ArrowRightIcon } from '@/components/icons';
 import type { ShowcasedWebsite } from '@/types/website';
 
 /**
@@ -145,51 +146,6 @@ function ErrorAlert({ message, onDismiss }: ErrorAlertProps) {
 }
 
 /**
- * Globe icon for showcase section
- */
-function GlobeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-      <path d="M2 12h20" />
-    </svg>
-  );
-}
-
-/**
- * Arrow right icon for View All link
- */
-function ArrowRightIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
-    </svg>
-  );
-}
-
-/**
  * Showcase card component for displaying a single showcased website
  */
 interface ShowcaseCardProps {
@@ -234,24 +190,10 @@ function ShowcaseCard({ website }: ShowcaseCardProps) {
 /**
  * Community Showcase section component
  * Requirement 23.4, 23.5: Display Community Showcase section with up to 6 websites
+ * Requirement 9.1: Use useShowcaseWebsites hook with pageSize of 6
  */
 function CommunityShowcase() {
-  const [websites, setWebsites] = useState<ShowcasedWebsite[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchShowcase() {
-      try {
-        const result = await websiteRepository.getShowcasedWebsites({ page: 1, pageSize: 6 });
-        setWebsites(result.items);
-      } catch (error) {
-        console.error('Error fetching showcase:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchShowcase();
-  }, []);
+  const { items: websites, isLoading } = useShowcaseWebsites({ pageSize: 6 });
 
   // Loading state
   if (isLoading) {
