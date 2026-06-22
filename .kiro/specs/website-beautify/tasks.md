@@ -226,7 +226,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
 - [~] 11. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 12. Implement UI Components - PreviewComparison
+- [x] 12. Implement UI Components - PreviewComparison
   - [x] 12.1 Create PreviewComparison component
     - Create `src/components/beautify/PreviewComparison.tsx`
     - Display two side-by-side iframe previews
@@ -237,7 +237,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Synchronize scroll position between both iframes
     - _Requirements: 7.3_
 
-  - [~] 12.3 Write property test for synchronized scrolling (Property 15)
+  - [x] 12.3 Write property test for synchronized scrolling (Property 15)
     - **Property 15: Synchronized Scroll Behavior**
     - **Validates: Requirements 7.3**
 
@@ -246,7 +246,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Apply to both previews simultaneously
     - _Requirements: 7.4_
 
-  - [~] 12.5 Write property test for viewport mode (Property 16)
+  - [x] 12.5 Write property test for viewport mode (Property 16)
     - **Property 16: Viewport Mode Applies to Both Previews**
     - **Validates: Requirements 7.4**
 
@@ -259,7 +259,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Support side-by-side and overlay comparison modes
     - _Requirements: 7.10_
 
-- [ ] 13. Implement UI Components - SaveOptionsDialog
+- [x] 13. Implement UI Components - SaveOptionsDialog
   - [x] 13.1 Create SaveOptionsDialog component
     - Create `src/components/beautify/SaveOptionsDialog.tsx`
     - Display "Replace Original" and "Save as New" options
@@ -278,11 +278,11 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Navigate to new website's preview page
     - _Requirements: 8.4, 8.5, 8.6_
 
-  - [~] 13.4 Write property test for title transformation (Property 17)
+  - [x] 13.4 Write property test for title transformation (Property 17)
     - **Property 17: Save as New Title Transformation**
     - **Validates: Requirements 8.5**
 
-- [ ] 14. Implement error handling
+- [x] 14. Implement error handling
   - [x] 14.1 Create error message mapping
     - Map error types to user-friendly messages
     - Network error: "Unable to connect. Please check your internet connection."
@@ -301,7 +301,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Preserve user edits on error
     - _Requirements: 10.6, 10.7, 10.8_
 
-  - [~] 14.4 Write property test for user edits preservation (Property 20)
+  - [x] 14.4 Write property test for user edits preservation (Property 20)
     - **Property 20: User Edits Preserved on Error**
     - **Validates: Requirements 10.8**
 

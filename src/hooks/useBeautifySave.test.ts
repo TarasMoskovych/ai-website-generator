@@ -8,9 +8,13 @@
  * - 8.4: Create new website document with beautified content
  * - 8.5: Append " (Beautified)" to title when "Save as New" is selected
  * - 8.6: Navigate to newly created website's preview page
+ *
+ * Property-Based Tests:
+ * - Property 17: Save as New Title Transformation
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as fc from 'fast-check';
 import { renderHook, act } from '@testing-library/react';
 import {
   useBeautifySave,
@@ -409,6 +413,186 @@ describe('useBeautifySave', () => {
           mockUser.displayName
         );
       });
+    });
+  });
+
+  /**
+   * Property-Based Tests
+   *
+   * These tests verify universal properties across generated inputs using fast-check.
+   */
+  describe('Property-Based Tests', () => {
+    /**
+     * Feature: website-beautify, Property 17: Save as New Title Transformation
+     *
+     * *For any* original title, "Save as New" SHALL append " (Beautified)" suffix.
+     * The transformation must be deterministic and preserve the original title
+     * as a prefix of the result.
+     *
+     * **Validates: Requirements 8.5**
+     */
+    it('title transformation appends suffix for any string (Property 17)', () => {
+      fc.assert(
+        fc.property(
+          // Generate arbitrary strings to represent website titles
+          // Include edge cases: empty strings, special characters, unicode
+          fc.string({ minLength: 0, maxLength: 500 }),
+          (originalTitle) => {
+            // Apply the title transformation
+            const transformedTitle = createBeautifiedTitle(originalTitle);
+
+            // Property 1: Result should end with the BEAUTIFIED_TITLE_SUFFIX
+            expect(transformedTitle.endsWith(BEAUTIFIED_TITLE_SUFFIX)).toBe(true);
+
+            // Property 2: Result should start with the original title
+            expect(transformedTitle.startsWith(originalTitle)).toBe(true);
+
+            // Property 3: Result length should equal original length plus suffix length
+            expect(transformedTitle.length).toBe(
+              originalTitle.length + BEAUTIFIED_TITLE_SUFFIX.length
+            );
+
+            // Property 4: Result should be exactly the concatenation
+            expect(transformedTitle).toBe(`${originalTitle}${BEAUTIFIED_TITLE_SUFFIX}`);
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Feature: website-beautify, Property 17: Title transformation with Unicode
+     *
+     * *For any* Unicode string (including emojis, CJK characters, RTL text),
+     * the transformation SHALL correctly append " (Beautified)" suffix.
+     *
+     * **Validates: Requirements 8.5**
+     */
+    it('title transformation handles Unicode strings correctly (Property 17)', () => {
+      fc.assert(
+        fc.property(
+          // Generate strings with full Unicode range including composite graphemes
+          fc.string({ minLength: 0, maxLength: 200, unit: 'grapheme-composite' }),
+          (originalTitle) => {
+            const transformedTitle = createBeautifiedTitle(originalTitle);
+
+            // The suffix should always be appended correctly
+            expect(transformedTitle).toBe(`${originalTitle}${BEAUTIFIED_TITLE_SUFFIX}`);
+
+            // Verify the suffix is present
+            expect(transformedTitle.endsWith(BEAUTIFIED_TITLE_SUFFIX)).toBe(true);
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Feature: website-beautify, Property 17: Title transformation preserves content
+     *
+     * The original title can be recovered by removing the suffix,
+     * proving that the transformation is non-destructive.
+     *
+     * **Validates: Requirements 8.5**
+     */
+    it('original title is recoverable from transformed title (Property 17)', () => {
+      fc.assert(
+        fc.property(
+          fc.string({ minLength: 0, maxLength: 500 }),
+          (originalTitle) => {
+            const transformedTitle = createBeautifiedTitle(originalTitle);
+
+            // Extract the original by removing the suffix
+            const recoveredTitle = transformedTitle.slice(
+              0,
+              transformedTitle.length - BEAUTIFIED_TITLE_SUFFIX.length
+            );
+
+            // The recovered title should match the original exactly
+            expect(recoveredTitle).toBe(originalTitle);
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Feature: website-beautify, Property 17: handleSaveAsNew applies title transformation
+     *
+     * *For any* original website title, when "Save as New" is selected via the hook,
+     * the saved website SHALL have a title that is the original with " (Beautified)" appended.
+     *
+     * **Validates: Requirements 8.5**
+     */
+    it('handleSaveAsNew applies correct title transformation (Property 17)', async () => {
+      // Test with a variety of generated titles to verify hook integration
+      const sampleTitles = fc.sample(fc.string({ minLength: 1, maxLength: 100 }), 100);
+
+      for (const originalTitle of sampleTitles) {
+        // Clear mocks before each iteration
+        mockSaveWebsite.mockClear();
+
+        // Set up the mock to return a website with the expected title
+        const expectedTitle = createBeautifiedTitle(originalTitle);
+        mockSaveWebsite.mockResolvedValueOnce({
+          ...mockOriginalWebsite,
+          id: 'new-website-456',
+          title: expectedTitle,
+          html: beautifiedHtml,
+          css: beautifiedCss,
+          thumbnailUrl: newThumbnailUrl,
+        });
+
+        const options: UseBeautifySaveOptions = {
+          originalWebsite: { ...mockOriginalWebsite, title: originalTitle },
+          beautifiedHtml,
+          beautifiedCss,
+        };
+
+        const { result } = renderHook(() => useBeautifySave(options));
+
+        await act(async () => {
+          await result.current.handleSaveAsNew();
+        });
+
+        // Verify the title was transformed correctly
+        expect(mockSaveWebsite).toHaveBeenCalledWith(
+          mockUser?.uid,
+          expect.objectContaining({
+            title: expectedTitle,
+          }),
+          mockUser?.displayName
+        );
+      }
+    });
+
+    /**
+     * Feature: website-beautify, Property 17: Idempotent suffix constant
+     *
+     * The BEAUTIFIED_TITLE_SUFFIX constant is consistent and non-empty.
+     * This ensures the transformation always produces a meaningful result.
+     *
+     * **Validates: Requirements 8.5**
+     */
+    it('BEAUTIFIED_TITLE_SUFFIX is consistent and non-empty (Property 17)', () => {
+      // The suffix should never be empty
+      expect(BEAUTIFIED_TITLE_SUFFIX.length).toBeGreaterThan(0);
+
+      // The suffix should be exactly " (Beautified)"
+      expect(BEAUTIFIED_TITLE_SUFFIX).toBe(' (Beautified)');
+
+      // Running the transformation multiple times with same input yields same result
+      fc.assert(
+        fc.property(
+          fc.string({ minLength: 0, maxLength: 100 }),
+          (title) => {
+            const result1 = createBeautifiedTitle(title);
+            const result2 = createBeautifiedTitle(title);
+            expect(result1).toBe(result2);
+          }
+        ),
+        { numRuns: 100 }
+      );
     });
   });
 });
