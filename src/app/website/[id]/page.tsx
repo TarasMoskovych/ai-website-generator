@@ -524,7 +524,64 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
       while (true) {
         const { done, value } = await reader.read();
 
-        if (done) break;
+        if (done) {
+          // Process any remaining data in buffer after stream ends
+          if (buffer.trim()) {
+            const lines = buffer.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+              const line = lines[i];
+
+              if (line.startsWith('event: ')) {
+                const eventType = line.slice(7);
+                const dataLine = lines[i + 1];
+
+                if (dataLine?.startsWith('data: ')) {
+                  try {
+                    const data: BeautifyStreamEvent = JSON.parse(dataLine.slice(6));
+
+                    switch (eventType) {
+                      case 'start':
+                        setBeautifyStage('analyzing');
+                        break;
+                      case 'mode':
+                        // Update stage based on mode
+                        if (data.mode === 'complete') {
+                          setBeautifyStage('completing');
+                        } else {
+                          setBeautifyStage('enhancing');
+                        }
+                        break;
+                      case 'text':
+                        if (data.content) {
+                          setBeautifyStreamingContent((prev) => prev + data.content);
+                          // Update stage based on content
+                          if (data.content.includes('```css')) {
+                            setBeautifyStage('finalizing');
+                          }
+                        }
+                        break;
+                      case 'done':
+                        if (data.result) {
+                          result = data.result;
+                        }
+                        break;
+                      case 'error':
+                        throw new Error(data.error || 'Beautification failed');
+                    }
+                  } catch (e) {
+                    if (e instanceof SyntaxError) {
+                      // JSON parse error, skip this event
+                      continue;
+                    }
+                    throw e;
+                  }
+                  i++; // Skip the data line we just processed
+                }
+              }
+            }
+          }
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
 

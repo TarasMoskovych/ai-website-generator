@@ -171,6 +171,65 @@ function GeneratePageContent() {
   const [streamingContent, setStreamingContent] = useState('');
 
   /**
+   * Parse SSE events from lines and update state
+   * Returns the result if a 'done' event is received
+   */
+  const parseSSEEvents = useCallback((
+    lines: string[],
+    currentResult: { html: string; css: string; title: string } | null
+  ): { html: string; css: string; title: string } | null => {
+    let result = currentResult;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      if (line.startsWith('event: ')) {
+        const eventType = line.slice(7);
+        const dataLine = lines[i + 1];
+
+        if (dataLine?.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(dataLine.slice(6));
+
+            switch (eventType) {
+              case 'start':
+                setGenerationStage('generating_html');
+                break;
+              case 'text':
+                if (data.content) {
+                  setStreamingContent((prev) => prev + data.content);
+                  // Update stage based on content
+                  if (data.content.includes('```css')) {
+                    setGenerationStage('generating_css');
+                  } else if (data.content.includes('Title:')) {
+                    setGenerationStage('finalizing');
+                  }
+                }
+                break;
+              case 'done':
+                if (data.result) {
+                  result = data.result;
+                }
+                break;
+              case 'error':
+                throw new Error(data.error || 'Generation failed');
+            }
+          } catch (e) {
+            if (e instanceof SyntaxError) {
+              // JSON parse error, skip this event
+              continue;
+            }
+            throw e;
+          }
+          i++; // Skip the data line we just processed
+        }
+      }
+    }
+
+    return result;
+  }, []);
+
+  /**
    * Convert file to base64 string
    */
   const fileToBase64 = useCallback((file: File): Promise<string> => {
@@ -228,7 +287,14 @@ function GeneratePageContent() {
       while (true) {
         const { done, value } = await reader.read();
 
-        if (done) break;
+        if (done) {
+          // Process any remaining data in buffer after stream ends
+          if (buffer.trim()) {
+            const lines = buffer.split('\n');
+            result = parseSSEEvents(lines, result);
+          }
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
 
@@ -236,51 +302,7 @@ function GeneratePageContent() {
         const lines = buffer.split('\n');
         buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-
-          if (line.startsWith('event: ')) {
-            const eventType = line.slice(7);
-            const dataLine = lines[i + 1];
-
-            if (dataLine?.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(dataLine.slice(6));
-
-                switch (eventType) {
-                  case 'start':
-                    setGenerationStage('generating_html');
-                    break;
-                  case 'text':
-                    if (data.content) {
-                      setStreamingContent((prev) => prev + data.content);
-                      // Update stage based on content
-                      if (data.content.includes('```css')) {
-                        setGenerationStage('generating_css');
-                      } else if (data.content.includes('Title:')) {
-                        setGenerationStage('finalizing');
-                      }
-                    }
-                    break;
-                  case 'done':
-                    if (data.result) {
-                      result = data.result;
-                    }
-                    break;
-                  case 'error':
-                    throw new Error(data.error || 'Generation failed');
-                }
-              } catch (e) {
-                if (e instanceof SyntaxError) {
-                  // JSON parse error, skip this event
-                  continue;
-                }
-                throw e;
-              }
-              i++; // Skip the data line we just processed
-            }
-          }
-        }
+        result = parseSSEEvents(lines, result);
       }
 
       if (!result) {
@@ -289,7 +311,7 @@ function GeneratePageContent() {
 
       return result;
     },
-    [getIdToken]
+    [getIdToken, parseSSEEvents]
   );
 
   /**
@@ -335,7 +357,14 @@ function GeneratePageContent() {
       while (true) {
         const { done, value } = await reader.read();
 
-        if (done) break;
+        if (done) {
+          // Process any remaining data in buffer after stream ends
+          if (buffer.trim()) {
+            const lines = buffer.split('\n');
+            result = parseSSEEvents(lines, result);
+          }
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
 
@@ -343,51 +372,7 @@ function GeneratePageContent() {
         const lines = buffer.split('\n');
         buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-
-          if (line.startsWith('event: ')) {
-            const eventType = line.slice(7);
-            const dataLine = lines[i + 1];
-
-            if (dataLine?.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(dataLine.slice(6));
-
-                switch (eventType) {
-                  case 'start':
-                    setGenerationStage('generating_html');
-                    break;
-                  case 'text':
-                    if (data.content) {
-                      setStreamingContent((prev) => prev + data.content);
-                      // Update stage based on content
-                      if (data.content.includes('```css')) {
-                        setGenerationStage('generating_css');
-                      } else if (data.content.includes('Title:')) {
-                        setGenerationStage('finalizing');
-                      }
-                    }
-                    break;
-                  case 'done':
-                    if (data.result) {
-                      result = data.result;
-                    }
-                    break;
-                  case 'error':
-                    throw new Error(data.error || 'Generation failed');
-                }
-              } catch (e) {
-                if (e instanceof SyntaxError) {
-                  // JSON parse error, skip this event
-                  continue;
-                }
-                throw e;
-              }
-              i++; // Skip the data line we just processed
-            }
-          }
-        }
+        result = parseSSEEvents(lines, result);
       }
 
       if (!result) {
@@ -396,7 +381,7 @@ function GeneratePageContent() {
 
       return result;
     },
-    [getIdToken, fileToBase64]
+    [getIdToken, fileToBase64, parseSSEEvents]
   );
 
   /**
