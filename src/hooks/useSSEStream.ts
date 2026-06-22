@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 /**
  * SSE event structure parsed from the stream
@@ -106,7 +106,11 @@ export function useSSEStream(config: UseSSEStreamConfig): UseSSEStreamReturn {
 
   // Store config in ref to avoid stale closures
   const configRef = useRef(config);
-  configRef.current = config;
+
+  // Sync config ref in effect (required by react-hooks/refs rule)
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
 
   /**
    * Cancel the ongoing stream

@@ -19,7 +19,8 @@ import { useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useShowcaseWebsites } from '@/hooks/useShowcaseWebsites';
-import { ArrowLeftIcon, GlobeIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
+import { Pagination } from '@/components/Pagination';
+import { ArrowLeftIcon, GlobeIcon } from '@/components/icons';
 import type { ShowcasedWebsite } from '@/types/website';
 
 
@@ -105,131 +106,6 @@ function WebsiteCard({ website }: WebsiteCardProps) {
     </Link>
   );
 }
-
-/**
- * Pagination component
- */
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
-
-function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  if (totalPages <= 1) return null;
-
-  // Calculate visible page numbers
-  const getVisiblePages = () => {
-    const pages: (number | 'ellipsis')[] = [];
-    const maxVisible = 5;
-
-    if (totalPages <= maxVisible) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    }
-
-    // Always show first page
-    pages.push(1);
-
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
-
-    if (start > 2) {
-      pages.push('ellipsis');
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
-    if (end < totalPages - 1) {
-      pages.push('ellipsis');
-    }
-
-    // Always show last page
-    if (totalPages > 1) {
-      pages.push(totalPages);
-    }
-
-    return pages;
-  };
-
-  const visiblePages = getVisiblePages();
-
-  return (
-    <nav
-      className="flex items-center justify-center gap-1"
-      aria-label="Pagination"
-    >
-      <button
-        type="button"
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="
-          inline-flex items-center justify-center
-          h-10 w-10 rounded-md
-          text-muted-foreground
-          hover:bg-muted hover:text-foreground
-          disabled:opacity-50 disabled:cursor-not-allowed
-          transition-colors
-        "
-        aria-label="Previous page"
-      >
-        <ChevronLeftIcon className="h-5 w-5" />
-      </button>
-
-      {visiblePages.map((page, index) =>
-        page === 'ellipsis' ? (
-          <span
-            key={`ellipsis-${index}`}
-            className="px-2 text-muted-foreground"
-            aria-hidden="true"
-          >
-            …
-          </span>
-        ) : (
-          <button
-            key={page}
-            type="button"
-            onClick={() => onPageChange(page)}
-            className={`
-              inline-flex items-center justify-center
-              h-10 min-w-10 px-3 rounded-md
-              text-sm font-medium
-              transition-colors
-              ${currentPage === page
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-              }
-            `}
-            aria-label={`Page ${page}`}
-            aria-current={currentPage === page ? 'page' : undefined}
-          >
-            {page}
-          </button>
-        )
-      )}
-
-      <button
-        type="button"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="
-          inline-flex items-center justify-center
-          h-10 w-10 rounded-md
-          text-muted-foreground
-          hover:bg-muted hover:text-foreground
-          disabled:opacity-50 disabled:cursor-not-allowed
-          transition-colors
-        "
-        aria-label="Next page"
-      >
-        <ChevronRightIcon className="h-5 w-5" />
-      </button>
-    </nav>
-  );
-}
-
-
 
 /**
  * Showcase page component

@@ -101,11 +101,18 @@ export function useWebsites(
 
   // Use ref to store the current page for refresh function
   const currentPageRef = useRef(currentPage);
-  currentPageRef.current = currentPage;
 
   // Use ref for pageSize to avoid re-creating fetchPage on pageSize changes
   const pageSizeRef = useRef(pageSize);
-  pageSizeRef.current = pageSize;
+
+  // Sync refs with state in effect (required by react-hooks/refs rule)
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+  }, [currentPage]);
+
+  useEffect(() => {
+    pageSizeRef.current = pageSize;
+  }, [pageSize]);
 
   /**
    * Fetch websites for a specific page
@@ -163,6 +170,7 @@ export function useWebsites(
    */
   useEffect(() => {
     // Reset state when userId changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Initial data fetch and state reset is intentional
     setItems([]);
     setTotalPages(0);
     setCurrentPage(1);

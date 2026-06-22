@@ -58,7 +58,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - **Validates: Requirements 2.4**
     - For any valid page number, verify fetchPage updates currentPage and triggers fetch
 
-- [~] 3. Checkpoint - Verify Icons and useWebsites
+- [x] 3. Checkpoint - Verify Icons and useWebsites
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 4. Create useShowcaseWebsites Custom Hook
@@ -134,7 +134,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Test getIdToken throws "User not authenticated" when no user
     - _Requirements: 5.1, 5.2, 13.2, 13.3_
 
-- [~] 7. Checkpoint - Verify All Custom Hooks
+- [x] 7. Checkpoint - Verify All Custom Hooks
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 8. Refactor WebsiteCard Component
@@ -150,7 +150,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Verify all interactive elements still function
     - _Requirements: 12.3, 13.1_
 
-- [ ] 9. Refactor Dashboard Page
+- [x] 9. Refactor Dashboard Page
   - [x] 9.1 Replace website fetching logic with useWebsites hook in Dashboard
     - Update Dashboard page component
     - Import and use useWebsites hook for fetching user websites
@@ -163,12 +163,12 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Import icons from Icons module
     - _Requirements: 7.2_
 
-  - [-] 9.3 Write integration test for Dashboard page
+  - [x] 9.3 Write integration test for Dashboard page
     - Verify Dashboard renders correctly with new hooks
     - Verify pagination, deletion, title editing, and beautify navigation work
     - _Requirements: 7.3, 7.4, 13.1_
 
-- [ ] 10. Refactor Showcase Page
+- [x] 10. Refactor Showcase Page
   - [x] 10.1 Replace website fetching logic with useShowcaseWebsites hook in Showcase
     - Update Showcase page component
     - Import and use useShowcaseWebsites hook
@@ -187,90 +187,90 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Import icons from Icons module
     - _Requirements: 6.3, 8.2_
 
-  - [-] 10.4 Write integration test for Showcase page
+  - [x] 10.4 Write integration test for Showcase page
     - Verify Showcase renders correctly with new hooks and components
     - Verify pagination works correctly
     - _Requirements: 8.3, 8.4, 13.1_
 
-- [~] 11. Checkpoint - Verify Dashboard and Showcase
+- [x] 11. Checkpoint - Verify Dashboard and Showcase
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 12. Refactor Home Page Community Showcase
-  - [-] 12.1 Replace fetching logic with useShowcaseWebsites hook in CommunityShowcase
+- [x] 12. Refactor Home Page Community Showcase
+  - [x] 12.1 Replace fetching logic with useShowcaseWebsites hook in CommunityShowcase
     - Update CommunityShowcase component on home page
     - Import and use useShowcaseWebsites hook with pageSize of 6
     - Remove inline fetching logic
     - _Requirements: 9.1, 9.3_
 
-  - [-] 12.2 Replace inline icons with Icons module imports in CommunityShowcase
+  - [x] 12.2 Replace inline icons with Icons module imports in CommunityShowcase
     - Remove inline icon definitions
     - Import icons from Icons module
     - _Requirements: 9.2_
 
-  - [~] 12.3 Write integration test for CommunityShowcase component
+  - [x] 12.3 Write integration test for CommunityShowcase component
     - Verify CommunityShowcase renders correctly
     - Verify pageSize of 6 is used
     - _Requirements: 9.3, 13.1_
 
-- [ ] 13. Refactor Generate Page
-  - [~] 13.1 Replace inline getIdToken with useAuth hook in Generate page
+- [x] 13. Refactor Generate Page
+  - [x] 13.1 Replace inline getIdToken with useAuth hook in Generate page
     - Update Generate page component
     - Import getIdToken from useAuth hook
     - Remove inline getIdToken function definition
     - _Requirements: 10.1_
 
-  - [~] 13.2 Evaluate and optionally integrate useSSEStream hook in Generate page
+  - [x] 13.2 Evaluate and optionally integrate useSSEStream hook in Generate page
     - Assess if useSSEStream integration adds excessive complexity
     - If feasible, replace inline SSE processing with useSSEStream hook
     - Ensure streaming preview and cancellation are preserved
     - If not feasible, document reasoning and keep current implementation
     - _Requirements: 10.2, 10.3_
 
-  - [~] 13.3 Write integration test for Generate page
+  - [x] 13.3 Write integration test for Generate page
     - Verify Generate page renders correctly
     - Verify website generation with streaming preview works
     - Verify cancellation works
     - _Requirements: 10.3, 13.1_
 
-- [ ] 14. Refactor Website Preview Page
-  - [~] 14.1 Replace inline getIdToken with useAuth hook in Website Preview page
+- [x] 14. Refactor Website Preview Page
+  - [x] 14.1 Replace inline getIdToken with useAuth hook in Website Preview page
     - Update Website Preview page component
     - Import getIdToken from useAuth hook
     - Remove inline getIdToken function definition
     - _Requirements: 11.1_
 
-  - [~] 14.2 Replace inline icons with Icons module imports in Website Preview page
+  - [x] 14.2 Replace inline icons with Icons module imports in Website Preview page
     - Remove inline icon definitions
     - Import icons from Icons module
     - _Requirements: 11.2_
 
-  - [~] 14.3 Evaluate and optionally integrate useSSEStream hook in Website Preview page
+  - [x] 14.3 Evaluate and optionally integrate useSSEStream hook in Website Preview page
     - Assess if useSSEStream integration adds excessive complexity
     - If feasible, replace inline SSE processing for beautify with useSSEStream hook
     - Ensure beautify streaming is preserved
     - If not feasible, document reasoning and keep current implementation
     - _Requirements: 11.3_
 
-  - [~] 14.4 Write integration test for Website Preview page
+  - [x] 14.4 Write integration test for Website Preview page
     - Verify Website Preview page renders correctly
     - Verify beautify streaming, code editing work
     - _Requirements: 11.4, 13.1_
 
-- [ ] 15. Final Cleanup and Verification
-  - [~] 15.1 Remove all duplicate code and verify no orphaned code remains
+- [x] 15. Final Cleanup and Verification
+  - [x] 15.1 Remove all duplicate code and verify no orphaned code remains
     - Search for any remaining inline icon definitions
     - Search for any remaining duplicate getIdToken functions
     - Search for any remaining duplicate fetching logic
     - Remove any dead code
     - _Requirements: 1.5, 5.4_
 
-  - [~] 15.2 Run full test suite and verify all tests pass
+  - [x] 15.2 Run full test suite and verify all tests pass
     - Run all existing tests
     - Run all new hook tests
     - Verify no regressions
     - _Requirements: 13.1, 13.2, 13.3_
 
-- [~] 16. Final checkpoint - Ensure all tests pass
+- [x] 16. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

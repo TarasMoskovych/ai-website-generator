@@ -854,7 +854,7 @@ describe('BeautifyErrorDisplay', () => {
               cleanup();
 
               const error = createBeautifyError(errorCode);
-              let editorState: EditorState = {
+              const editorState: EditorState = {
                 html: userHtml,
                 css: userCss,
                 cursorPosition: 0,
@@ -922,7 +922,7 @@ describe('BeautifyErrorDisplay', () => {
               cleanup();
 
               const error = createBeautifyError(errorCode);
-              let editorState: EditorState = {
+              const editorState: EditorState = {
                 html: userHtml,
                 css: userCss,
                 cursorPosition: 0,

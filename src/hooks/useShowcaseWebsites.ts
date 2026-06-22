@@ -94,11 +94,18 @@ export function useShowcaseWebsites(
 
   // Use ref to store the current page for refresh function
   const currentPageRef = useRef(currentPage);
-  currentPageRef.current = currentPage;
 
   // Use ref for pageSize to avoid re-creating fetchPage on pageSize changes
   const pageSizeRef = useRef(pageSize);
-  pageSizeRef.current = pageSize;
+
+  // Sync refs with state in effect (required by react-hooks/refs rule)
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+  }, [currentPage]);
+
+  useEffect(() => {
+    pageSizeRef.current = pageSize;
+  }, [pageSize]);
 
   /**
    * Fetch showcased websites for a specific page
@@ -145,6 +152,7 @@ export function useShowcaseWebsites(
    * Requirement 3.2: Automatically fetch first page on mount
    */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Initial data fetch is intentional
     fetchPage(1);
   }, [fetchPage]);
 

@@ -47,11 +47,9 @@ import {
   DownloadIcon,
   CheckIcon,
   CodeIcon,
-  PanelLeftIcon,
   PanelRightIcon,
   MaximizeIcon,
   MinimizeIcon,
-  XIcon,
   GlobeIcon,
 } from '@/components/icons';
 import websiteRepository from '@/services/websiteRepository';
@@ -278,6 +276,7 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
    * Fetch website on mount and when dependencies change
    */
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Initial data fetch is intentional
     fetchWebsite();
   }, [fetchWebsite]);
 

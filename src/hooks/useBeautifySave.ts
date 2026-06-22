@@ -30,8 +30,8 @@ import type { CreateWebsiteData, GeneratedWebsite } from '@/types/website';
  * Options for the useBeautifySave hook
  */
 export interface UseBeautifySaveOptions {
-  /** The original website being beautified */
-  originalWebsite: GeneratedWebsite;
+  /** The original website being beautified (can be null while loading) */
+  originalWebsite: GeneratedWebsite | null;
   /** The beautified HTML content */
   beautifiedHtml: string;
   /** The beautified CSS content */
@@ -134,6 +134,11 @@ export function useBeautifySave({
    * Requirement 8.3: Update existing website document with beautified HTML, CSS, and regenerated thumbnail
    */
   const handleReplaceOriginal = useCallback(async (): Promise<void> => {
+    // Guard against null website
+    if (!originalWebsite) {
+      throw new Error('Website not loaded');
+    }
+
     // Generate new thumbnail for beautified content
     const thumbnailUrl = await generateThumbnailForContent(beautifiedHtml, beautifiedCss);
 
@@ -154,7 +159,7 @@ export function useBeautifySave({
       onSuccess();
     }
   }, [
-    originalWebsite.id,
+    originalWebsite,
     beautifiedHtml,
     beautifiedCss,
     generateThumbnailForContent,
@@ -173,6 +178,11 @@ export function useBeautifySave({
     // Verify user is authenticated
     if (!user) {
       throw new Error('User not authenticated');
+    }
+
+    // Guard against null website
+    if (!originalWebsite) {
+      throw new Error('Website not loaded');
     }
 
     // Generate new thumbnail for beautified content
@@ -211,10 +221,7 @@ export function useBeautifySave({
     router.push(`/website/${savedWebsite.id}`);
   }, [
     user,
-    originalWebsite.title,
-    originalWebsite.inputType,
-    originalWebsite.originalPrompt,
-    originalWebsite.isPublic,
+    originalWebsite,
     beautifiedHtml,
     beautifiedCss,
     generateThumbnailForContent,
