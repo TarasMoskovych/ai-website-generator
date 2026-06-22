@@ -74,23 +74,23 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Emit proper stream events (start, mode, text, done, error)
     - _Requirements: 2.1, 2.2, 2.3, 3.1, 3.2, 3.3_
 
-  - [~] 4.3 Implement completion mode logic
+  - [-] 4.3 Implement completion mode logic
     - Handle incomplete websites by completing missing sections
     - Maintain existing design style, close unclosed tags, complete truncated text
     - Add generation marker to completed HTML
     - _Requirements: 2.4, 2.5, 2.6, 2.7, 2.8_
 
-  - [~] 4.4 Write property test for generation marker in completed websites (Property 8)
+  - [x] 4.4 Write property test for generation marker in completed websites (Property 8)
     - **Property 8: Completed Websites Contain Generation Marker**
     - **Validates: Requirements 2.8**
 
-  - [~] 4.5 Implement enhancement mode logic
+  - [x] 4.5 Implement enhancement mode logic
     - Apply visual enhancements: color harmony, typography, animations, spacing, hover states, depth
     - Preserve layout structure, maintain WCAG AA accessibility, preserve responsive design
     - Support dark mode preservation/addition
     - _Requirements: 3.4, 3.5, 3.6, 3.7_
 
-  - [~] 4.6 Create beautify service index file
+  - [x] 4.6 Create beautify service index file
     - Create `src/services/beautify/index.ts` to export all beautify services
     - _Requirements: 2.1, 3.1_
 

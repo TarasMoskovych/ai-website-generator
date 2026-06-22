@@ -147,8 +147,40 @@ export type { RetryOptions, RateLimitResponse } from './errorHandling';
 
 // Beautify Services
 export {
+  // Completeness Detector
   GENERATION_MARKER,
+  STRUCTURAL_ELEMENTS,
   hasGenerationMarker,
+  detectMissingStructuralElements,
+  detectTruncationIssues,
   detectCompleteness,
   completenessDetector,
+  // Beautify Service
+  beautifyWebsiteStream,
+  ensureGenerationMarker,
+  beautifyService,
+  // Beautify Prompts
+  COMPLETION_PROMPT,
+  ENHANCEMENT_PROMPT,
+  ORIGINAL_PROMPT_CONTEXT_TEXT,
+  ORIGINAL_PROMPT_UNAVAILABLE_TEXT,
+  REFERENCE_IMAGE_CONTEXT_TEXT,
+  REFERENCE_IMAGE_UNAVAILABLE_TEXT,
+  buildCompletionPrompt,
+  buildEnhancementPrompt,
+  beautifyPrompts,
+} from './beautify';
+export type {
+  ReferenceImageMimeType,
+  BeautifyStreamRequest,
+  BeautifyEventType,
+  BeautificationMode,
+  BeautifyStreamEvent,
+  StructuralElement,
+  CompletenessResult,
+  BeautifyOptions,
+  BeautifyLoadingStage,
+  BeautifyDialogResult,
+  ComparisonMode,
+  ViewportMode,
 } from './beautify';
