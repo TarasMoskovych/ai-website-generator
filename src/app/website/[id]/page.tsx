@@ -42,6 +42,18 @@ import {
   SaveOptionsDialog,
   BeautifyErrorDisplay,
 } from '@/components/beautify';
+import {
+  ArrowLeftIcon,
+  DownloadIcon,
+  CheckIcon,
+  CodeIcon,
+  PanelLeftIcon,
+  PanelRightIcon,
+  MaximizeIcon,
+  MinimizeIcon,
+  XIcon,
+  GlobeIcon,
+} from '@/components/icons';
 import websiteRepository from '@/services/websiteRepository';
 import { generateSingleFile, generateZipArchive, downloadBlob } from '@/services/downloadService';
 import { sanitize } from '@/services/htmlSanitizer';
@@ -137,231 +149,6 @@ function WebsiteNotFound() {
 }
 
 /**
- * Back arrow icon
- */
-function ArrowLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="m12 19-7-7 7-7" />
-      <path d="M19 12H5" />
-    </svg>
-  );
-}
-
-/**
- * Download icon
- */
-function DownloadIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  );
-}
-
-/**
- * Check icon for save indicator
- */
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-/**
- * Code icon for code panel toggle
- */
-function CodeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-    </svg>
-  );
-}
-
-/**
- * Panel left icon (collapse)
- */
-function PanelLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d="M9 3v18" />
-    </svg>
-  );
-}
-
-/**
- * Panel right icon (expand)
- */
-function PanelRightIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <rect width="18" height="18" x="3" y="3" rx="2" />
-      <path d="M15 3v18" />
-    </svg>
-  );
-}
-
-/**
- * Maximize icon (enter fullscreen)
- */
-function MaximizeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M8 3H5a2 2 0 0 0-2 2v3" />
-      <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
-      <path d="M3 16v3a2 2 0 0 0 2 2h3" />
-      <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
-    </svg>
-  );
-}
-
-/**
- * Minimize icon (exit fullscreen)
- */
-function MinimizeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M4 14h6v6" />
-      <path d="M20 10h-6V4" />
-      <path d="M14 10l7-7" />
-      <path d="M3 21l7-7" />
-    </svg>
-  );
-}
-
-/**
- * X icon for close button
- */
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  );
-}
-
-/**
- * Globe icon for showcase toggle
- */
-function GlobeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-      <path d="M2 12h20" />
-    </svg>
-  );
-}
-
-/**
  * Sanitizes a filename by removing invalid characters
  */
 function sanitizeFilename(title: string): string {
@@ -381,7 +168,7 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, getIdToken } = useAuth();
 
   // Website data state
   const [website, setWebsite] = useState<GeneratedWebsite | null>(null);
@@ -672,17 +459,6 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
     if (!website || isBeautifying) return;
     setShowBeautifyOptions(true);
   }, [website, isBeautifying]);
-
-  /**
-   * Get Firebase ID token for API authentication
-   */
-  const getIdToken = useCallback(async (): Promise<string> => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      throw new Error('User not authenticated');
-    }
-    return currentUser.getIdToken();
-  }, []);
 
   /**
    * Handle beautify options dialog confirmation
