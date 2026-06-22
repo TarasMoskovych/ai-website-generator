@@ -23,6 +23,15 @@
  * 7. Shows LoadingIndicator during website generation
  * 8. Handles cancel functionality to abort generation
  * 9. Preserves input on cancel or error for retry
+ *
+ * SSE Stream Handling Note (Requirement 10.2):
+ * This page uses inline SSE streaming logic rather than the useSSEStream hook because:
+ * 1. The page requires result accumulation (final HTML/CSS/title object) which the hook doesn't support
+ * 2. Generation stage detection logic (detecting '```css', 'Title:' patterns) runs during streaming
+ * 3. Timer management is tightly coupled with generation state and post-processing
+ * 4. Complex post-streaming workflow (save, thumbnail, navigate) is deeply integrated
+ * 5. Two separate generation paths (text/screenshot) would each need distinct hook configs
+ * Using the hook would add excessive complexity without meaningful code reduction.
  */
 
 'use client';
@@ -38,7 +47,6 @@ import { ModeSwitchConfirmDialog } from '@/components/common/ModeSwitchConfirmDi
 import { LoadingIndicator } from '@/components/common/LoadingIndicator';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { validateTextInput, validateScreenshotInput } from '@/services/validation';
-import { auth } from '@/lib/firebase';
 import { InputMode, GenerationStage } from '@/types';
 import { getErrorMessage, isAppError } from '@/services/errorHandling';
 import { save as saveWebsite } from '@/services/websiteRepository';
@@ -53,8 +61,8 @@ function GeneratePageContent() {
   // Router for navigation after successful generation
   const router = useRouter();
 
-  // Auth context to get current user
-  const { user } = useAuth();
+  // Auth context to get current user and authentication utilities
+  const { user, getIdToken } = useAuth();
 
   // Input mode state (Requirement 9.2: text mode is default)
   const [activeMode, setActiveMode] = useState<InputMode>('text');
@@ -161,17 +169,6 @@ function GeneratePageContent() {
 
   // State for streaming content preview
   const [streamingContent, setStreamingContent] = useState('');
-
-  /**
-   * Get Firebase ID token for API authentication
-   */
-  const getIdToken = useCallback(async (): Promise<string> => {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      throw new Error('User not authenticated');
-    }
-    return currentUser.getIdToken();
-  }, []);
 
   /**
    * Convert file to base64 string
