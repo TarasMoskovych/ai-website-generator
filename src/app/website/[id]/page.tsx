@@ -61,6 +61,7 @@ import type { GeneratedWebsite } from '@/types/website';
 import type { ViewportMode } from '@/lib/constants';
 import type { BeautifyDialogResult, BeautifyLoadingStage, BeautifyStreamEvent } from '@/types/beautify';
 import type { BeautifyError } from '@/lib/beautifyErrors';
+import { createParser } from 'eventsource-parser';
 
 /**
  * Auto-save debounce delay in milliseconds
@@ -518,137 +519,77 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
       }
 
       const decoder = new TextDecoder();
-      let buffer = '';
-      let result: { html: string; css: string } | null = null;
+      // Use wrapper object to allow mutation inside closure
+      const resultRef: { value: { html: string; css: string } | null } = { value: null };
 
+      // Create SSE parser using eventsource-parser library
+      const parser = createParser({
+        onEvent: (event) => {
+          const eventType = event.event;
+          const eventData = event.data;
+
+          if (!eventType || !eventData) return;
+
+          try {
+            const data: BeautifyStreamEvent = JSON.parse(eventData);
+
+            switch (eventType) {
+              case 'start':
+                setBeautifyStage('analyzing');
+                break;
+              case 'mode':
+                // Update stage based on mode
+                if (data.mode === 'complete') {
+                  setBeautifyStage('completing');
+                } else {
+                  setBeautifyStage('enhancing');
+                }
+                break;
+              case 'text':
+                if (data.content) {
+                  setBeautifyStreamingContent((prev) => prev + data.content);
+                  // Update stage based on content
+                  if (data.content.includes('```css')) {
+                    setBeautifyStage('finalizing');
+                  }
+                }
+                break;
+              case 'done':
+                if (data.result) {
+                  resultRef.value = data.result;
+                }
+                break;
+              case 'error':
+                throw new Error(data.error || 'Beautification failed');
+            }
+          } catch (e) {
+            if (!(e instanceof SyntaxError)) {
+              throw e;
+            }
+          }
+        },
+      });
+
+      // Read and parse the stream
       while (true) {
         const { done, value } = await reader.read();
 
         if (done) {
-          // Process any remaining data in buffer after stream ends
-          if (buffer.trim()) {
-            const lines = buffer.split('\n');
-            for (let i = 0; i < lines.length; i++) {
-              const line = lines[i];
-
-              if (line.startsWith('event: ')) {
-                const eventType = line.slice(7);
-                const dataLine = lines[i + 1];
-
-                if (dataLine?.startsWith('data: ')) {
-                  try {
-                    const data: BeautifyStreamEvent = JSON.parse(dataLine.slice(6));
-
-                    switch (eventType) {
-                      case 'start':
-                        setBeautifyStage('analyzing');
-                        break;
-                      case 'mode':
-                        // Update stage based on mode
-                        if (data.mode === 'complete') {
-                          setBeautifyStage('completing');
-                        } else {
-                          setBeautifyStage('enhancing');
-                        }
-                        break;
-                      case 'text':
-                        if (data.content) {
-                          setBeautifyStreamingContent((prev) => prev + data.content);
-                          // Update stage based on content
-                          if (data.content.includes('```css')) {
-                            setBeautifyStage('finalizing');
-                          }
-                        }
-                        break;
-                      case 'done':
-                        if (data.result) {
-                          result = data.result;
-                        }
-                        break;
-                      case 'error':
-                        throw new Error(data.error || 'Beautification failed');
-                    }
-                  } catch (e) {
-                    if (e instanceof SyntaxError) {
-                      // JSON parse error, skip this event
-                      continue;
-                    }
-                    throw e;
-                  }
-                  i++; // Skip the data line we just processed
-                }
-              }
-            }
-          }
+          // Consume any remaining buffered data
+          parser.reset({ consume: true });
           break;
         }
 
-        buffer += decoder.decode(value, { stream: true });
-
-        // Parse SSE events from buffer
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete line in buffer
-
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-
-          if (line.startsWith('event: ')) {
-            const eventType = line.slice(7);
-            const dataLine = lines[i + 1];
-
-            if (dataLine?.startsWith('data: ')) {
-              try {
-                const data: BeautifyStreamEvent = JSON.parse(dataLine.slice(6));
-
-                switch (eventType) {
-                  case 'start':
-                    setBeautifyStage('analyzing');
-                    break;
-                  case 'mode':
-                    // Update stage based on mode
-                    if (data.mode === 'complete') {
-                      setBeautifyStage('completing');
-                    } else {
-                      setBeautifyStage('enhancing');
-                    }
-                    break;
-                  case 'text':
-                    if (data.content) {
-                      setBeautifyStreamingContent((prev) => prev + data.content);
-                      // Update stage based on content
-                      if (data.content.includes('```css')) {
-                        setBeautifyStage('finalizing');
-                      }
-                    }
-                    break;
-                  case 'done':
-                    if (data.result) {
-                      result = data.result;
-                    }
-                    break;
-                  case 'error':
-                    throw new Error(data.error || 'Beautification failed');
-                }
-              } catch (e) {
-                if (e instanceof SyntaxError) {
-                  // JSON parse error, skip this event
-                  continue;
-                }
-                throw e;
-              }
-              i++; // Skip the data line we just processed
-            }
-          }
-        }
+        parser.feed(decoder.decode(value, { stream: true }));
       }
 
-      if (!result) {
+      if (!resultRef.value) {
         throw new Error('No result received from stream');
       }
 
       // Success - store beautified content and show comparison
-      setBeautifiedHtml(result.html);
-      setBeautifiedCss(result.css);
+      setBeautifiedHtml(resultRef.value.html);
+      setBeautifiedCss(resultRef.value.css);
       setIsBeautifying(false);
       setShowPreviewComparison(true);
     } catch (err) {
