@@ -26,6 +26,103 @@ describe('CompletenessDetector', () => {
     });
   });
 
+  /**
+   * Performance test for Requirement 1.1
+   *
+   * Validates: Requirement 1.1 - THE Completeness_Detector SHALL analyze the HTML content
+   * for structural completeness within 2 seconds
+   */
+  describe('Performance', () => {
+    it('should complete analysis within 2 seconds for typical HTML content', () => {
+      // Generate a moderately large HTML document (simulating a typical website)
+      const largeHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Website</title>
+</head>
+<body>
+  <header>
+    <nav>
+      <ul>${Array.from({ length: 20 }, (_, i) => `<li><a href="#section${i}">Link ${i}</a></li>`).join('')}</ul>
+    </nav>
+  </header>
+  <main>
+    ${Array.from({ length: 50 }, (_, i) => `
+    <section id="section${i}">
+      <h2>Section ${i}</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+      <div class="content">
+        <p>More content here with various elements.</p>
+        <ul>${Array.from({ length: 5 }, (_, j) => `<li>Item ${j}</li>`).join('')}</ul>
+      </div>
+    </section>`).join('')}
+  </main>
+  <footer>
+    <p>&copy; 2024 Test Company. All rights reserved.</p>
+  </footer>
+</body>
+</html>`;
+
+      const largeCss = Array.from(
+        { length: 100 },
+        (_, i) => `.class${i} { color: #${i.toString(16).padStart(6, '0')}; margin: ${i}px; padding: ${i}px; display: flex; justify-content: center; align-items: center; }`
+      ).join('\n');
+
+      const startTime = performance.now();
+      const result = detectCompleteness(largeHtml, largeCss);
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+
+      // Assert that the analysis completes within 2 seconds (2000ms)
+      expect(duration).toBeLessThan(2000);
+
+      // Also verify the result is correct
+      expect(result.isComplete).toBe(true);
+      expect(result.status).toBe('complete');
+      expect(result.missingElements).toHaveLength(0);
+    });
+
+    it('should complete analysis within 2 seconds even for very large HTML content', () => {
+      // Generate an even larger HTML document to stress test
+      const veryLargeHtml = `<!DOCTYPE html>
+<html>
+<head><title>Large Test</title></head>
+<body>
+  <header><nav>Navigation</nav></header>
+  <main>
+    ${Array.from({ length: 200 }, (_, i) => `
+    <article id="article${i}">
+      <h2>Article ${i}</h2>
+      <p>${'Lorem ipsum dolor sit amet. '.repeat(20)}</p>
+      <div class="nested">
+        ${Array.from({ length: 10 }, (_, j) => `<span class="item-${j}">Content ${j}</span>`).join('')}
+      </div>
+    </article>`).join('')}
+  </main>
+  <footer><p>Footer content</p></footer>
+</body>
+</html>`;
+
+      const veryLargeCss = Array.from(
+        { length: 500 },
+        (_, i) => `.selector${i} { property${i}: value${i}; another-property: ${i}px; }`
+      ).join('\n');
+
+      const startTime = performance.now();
+      const result = detectCompleteness(veryLargeHtml, veryLargeCss);
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+
+      // Assert that the analysis completes within 2 seconds (2000ms)
+      expect(duration).toBeLessThan(2000);
+
+      // Verify the result
+      expect(result.isComplete).toBe(true);
+    });
+  });
+
   describe('STRUCTURAL_ELEMENTS constant', () => {
     /**
      * Validates: Requirement 1.5 - Structural_Elements definition
@@ -847,6 +944,84 @@ describe('CompletenessDetector', () => {
             for (const element of expectedMissingElements) {
               expect(result.issues).toContain(`Missing <${element}> element`);
             }
+          }
+        ),
+        { numRuns: 100 }
+      );
+    });
+
+    /**
+     * Feature: website-beautify, Property 6: Truncation detection implies incomplete
+     *
+     * *For any* HTML content without the generation marker that contains unclosed tags
+     * or truncated text, the Completeness_Detector SHALL classify it as "incomplete".
+     *
+     * **Validates: Requirements 1.7, 1.8**
+     */
+    it('truncation detection implies incomplete classification (Property 6)', () => {
+      // Generator for number of unclosed div tags (at least 1)
+      const unclosedDivCount = fc.integer({ min: 1, max: 5 });
+
+      // Generator for nested content inside divs
+      const nestedContent = fc.string({ minLength: 0, maxLength: 50 }).map((content) =>
+        // Sanitize content to avoid accidentally creating closing tags or the marker
+        content
+          .replace(/GENERATION_COMPLETE/gi, '')
+          .replace(/<\/?div/gi, '')
+          .replace(/</g, '')
+          .replace(/>/g, '')
+      );
+
+      // Generator for random CSS that is valid (no truncation issues)
+      const validCss = fc.constantFrom(
+        '',
+        '.test { color: red; }',
+        'body { margin: 0; padding: 0; }',
+        '.container { display: flex; justify-content: center; }'
+      );
+
+      fc.assert(
+        fc.property(
+          unclosedDivCount,
+          nestedContent,
+          validCss,
+          (divCount, content, css) => {
+            // Build HTML with all structural elements present (to isolate truncation detection)
+            // but with unclosed div tags
+            let html = '<!DOCTYPE html><html><head><title>Test</title></head><body>';
+            html += '<header>Header Content</header>';
+            html += '<main>';
+
+            // Add unclosed div tags (opening tags without corresponding closing tags)
+            for (let i = 0; i < divCount; i++) {
+              html += `<div class="level-${i}">`;
+              html += content;
+            }
+
+            // Intentionally NOT closing the div tags to create truncation
+            html += '</main>';
+            html += '<footer>Footer Content</footer>';
+            html += '</body></html>';
+
+            // Verify the HTML does NOT contain the generation marker
+            expect(html.includes(GENERATION_MARKER)).toBe(false);
+
+            // Call the completeness detector
+            const result = detectCompleteness(html, css);
+
+            // Property assertion: Any HTML with unclosed tags MUST be classified as incomplete
+            expect(result.isComplete).toBe(false);
+            expect(result.status).toBe('incomplete');
+            expect(result.hasGenerationMarker).toBe(false);
+
+            // Verify truncation issues are detected
+            expect(result.truncationIssues.length).toBeGreaterThan(0);
+            expect(result.truncationIssues.some((issue) => issue.includes('Unclosed <div>'))).toBe(
+              true
+            );
+
+            // Verify truncation issues are included in the overall issues array
+            expect(result.issues.some((issue) => issue.includes('Unclosed <div>'))).toBe(true);
           }
         ),
         { numRuns: 100 }

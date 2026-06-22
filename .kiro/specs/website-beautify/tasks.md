@@ -43,11 +43,11 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Detect unclosed HTML tags, cut-off text, and incomplete CSS rules
     - _Requirements: 1.7, 1.8_
 
-  - [~] 2.6 Write property test for truncation detection (Property 6)
+  - [x] 2.6 Write property test for truncation detection (Property 6)
     - **Property 6: Truncation Detection Implies Incomplete**
     - **Validates: Requirements 1.7, 1.8**
 
-  - [~] 2.7 Implement the main `detectCompleteness` function
+  - [x] 2.7 Implement the main `detectCompleteness` function
     - Combine marker detection, structural analysis, and truncation detection
     - Return `CompletenessResult` with classification and issues list
     - Ensure analysis completes within 2 seconds
