@@ -170,7 +170,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - _Requirements: 0.1, 0.3_
 
 - [ ] 8. Implement UI Components - BeautifyButton
-  - [~] 8.1 Create BeautifyButton component
+  - [x] 8.1 Create BeautifyButton component
     - Create `src/components/beautify/BeautifyButton.tsx`
     - Support primary, secondary, and icon-only variants
     - Display sparkle/wand icon
@@ -182,7 +182,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
 - [ ] 9. Implement UI Components - BeautifyOptionsDialog
-  - [~] 9.1 Create BeautifyOptionsDialog component
+  - [x] 9.1 Create BeautifyOptionsDialog component
     - Create `src/components/beautify/BeautifyOptionsDialog.tsx`
     - Display "Quick Beautify" and "Beautify with Reference Image" options
     - Include Cancel button
@@ -203,7 +203,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - **Validates: Requirements 0.1.5**
 
 - [ ] 10. Implement UI Components - BeautifyLoadingOverlay
-  - [~] 10.1 Create BeautifyLoadingOverlay component
+  - [x] 10.1 Create BeautifyLoadingOverlay component
     - Create `src/components/beautify/BeautifyLoadingOverlay.tsx`
     - Display mode indicators: "Analyzing completeness...", "Completing missing sections...", "Enhancing design...", "Finalizing..."
     - Show elapsed time counter
