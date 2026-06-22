@@ -34,6 +34,7 @@ export function createMockWebsite(overrides?: Partial<GeneratedWebsite>): Genera
     css: 'body { margin: 0; }',
     thumbnailUrl: 'data:image/png;base64,mockThumbnail',
     inputType: 'text',
+    originalPrompt: 'Create a test website',
     isPublic: true,
     isShowcased: false,
     showcasedAt: null,

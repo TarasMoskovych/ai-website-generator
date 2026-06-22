@@ -33,3 +33,19 @@ export { initialTextInputState, initialScreenshotInputState } from './input';
 // Error types
 export type { ErrorCode, AppError } from './error';
 export { ERROR_CODES, ERROR_MESSAGES, createAppError } from './error';
+
+// Beautify types
+export type {
+  ReferenceImageMimeType,
+  BeautifyStreamRequest,
+  BeautifyEventType,
+  BeautificationMode,
+  BeautifyStreamEvent,
+  StructuralElement,
+  CompletenessResult,
+  BeautifyOptions,
+  BeautifyLoadingStage,
+  BeautifyDialogResult,
+  ComparisonMode,
+  ViewportMode,
+} from './beautify';

@@ -21,6 +21,8 @@ export interface GeneratedWebsite {
   thumbnailUrl: string;
   /** How the website was generated */
   inputType: 'text' | 'screenshot';
+  /** Original text prompt used for generation (null for screenshot-based, max 10,000 characters) */
+  originalPrompt: string | null;
   /** Whether the website is publicly viewable */
   isPublic: boolean;
   /** Whether the website is featured in the public showcase */
@@ -59,4 +61,4 @@ export type CreateWebsiteData = Omit<GeneratedWebsite, 'id' | 'userId' | 'create
 /**
  * Data that can be updated on an existing website
  */
-export type UpdateWebsiteData = Partial<Pick<GeneratedWebsite, 'title' | 'html' | 'css' | 'thumbnailUrl' | 'isPublic' | 'isShowcased' | 'showcasedAt'>>;
+export type UpdateWebsiteData = Partial<Pick<GeneratedWebsite, 'title' | 'html' | 'css' | 'thumbnailUrl' | 'isPublic' | 'isShowcased' | 'showcasedAt' | 'originalPrompt'>>;

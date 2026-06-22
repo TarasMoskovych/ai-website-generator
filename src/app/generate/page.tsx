@@ -488,6 +488,7 @@ function GeneratePageContent() {
           css: result.css,
           thumbnailUrl,
           inputType: type,
+          originalPrompt: type === 'text' ? textValue : null,
           isPublic: true,
         };
 

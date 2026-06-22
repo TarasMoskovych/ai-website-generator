@@ -147,6 +147,10 @@ export const generatedWebsiteArb: fc.Arbitrary<GeneratedWebsite> = fc.record({
     fc.constant('/placeholder-thumbnail.png')
   ),
   inputType: fc.constantFrom('text' as const, 'screenshot' as const),
+  originalPrompt: fc.oneof(
+    fc.string({ minLength: 10, maxLength: 10_000 }),
+    fc.constant(null)
+  ),
   isPublic: fc.boolean(),
   isShowcased: fc.boolean(),
   showcasedAt: fc.oneof(

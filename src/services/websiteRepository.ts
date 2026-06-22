@@ -91,6 +91,7 @@ function documentToWebsite(
     css: data.css,
     thumbnailUrl: data.thumbnailUrl || data.thumbnail || '', // Support both field names
     inputType: data.inputType || data.sourceType, // Support both field names
+    originalPrompt: data.originalPrompt ?? null,
     isPublic: data.isPublic ?? true,
     isShowcased: data.isShowcased ?? false,
     showcasedAt: data.showcasedAt instanceof Timestamp
@@ -151,6 +152,7 @@ export async function save(
       css: website.css,
       thumbnailUrl: website.thumbnailUrl,
       inputType: website.inputType,
+      originalPrompt: website.originalPrompt ?? null,
       isPublic: website.isPublic ?? true,
       isShowcased: false,
       showcasedAt: null,
@@ -171,6 +173,7 @@ export async function save(
       css: website.css,
       thumbnailUrl: website.thumbnailUrl,
       inputType: website.inputType,
+      originalPrompt: website.originalPrompt ?? null,
       isPublic: website.isPublic ?? true,
       isShowcased: false,
       showcasedAt: null,
