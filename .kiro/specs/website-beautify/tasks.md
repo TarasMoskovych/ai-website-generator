@@ -101,7 +101,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Implement SSE response with Content-Type `text/event-stream`
     - _Requirements: 4.1, 4.9, 4.11_
 
-  - [-] 5.2 Implement authentication middleware
+  - [x] 5.2 Implement authentication middleware
     - Verify Firebase authentication via Bearer token
     - Return 401 status for invalid/missing authentication
     - _Requirements: 4.2, 4.3_
@@ -110,7 +110,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - **Property 9: Authentication Required for API Access**
     - **Validates: Requirements 4.2, 4.3**
 
-  - [-] 5.4 Implement request validation
+  - [x] 5.4 Implement request validation
     - Validate required fields: websiteId, html, css
     - Return 400 status for missing required fields
     - _Requirements: 4.4, 4.5_
@@ -119,7 +119,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - **Property 10: Required Fields Validation**
     - **Validates: Requirements 4.4, 4.5**
 
-  - [-] 5.6 Implement reference image validation
+  - [x] 5.6 Implement reference image validation
     - Validate MIME type is image/png, image/jpeg, or image/webp
     - Return 400 status for invalid MIME type
     - _Requirements: 4.7, 4.8_
