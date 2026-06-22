@@ -20,7 +20,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - _Requirements: 4.4, 4.5, 4.7_
 
 - [ ] 2. Implement CompletenessDetector service
-  - [~] 2.1 Create CompletenessDetector with generation marker detection
+  - [x] 2.1 Create CompletenessDetector with generation marker detection
     - Create `src/services/beautify/completenessDetector.ts`
     - Implement `GENERATION_MARKER` constant (`<!-- GENERATION_COMPLETE -->`)
     - Implement marker detection logic that classifies as "complete" when marker present
@@ -61,7 +61,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Implement BeautifyService
-  - [~] 4.1 Create beautify prompts
+  - [x] 4.1 Create beautify prompts
     - Create `src/lib/beautifyPrompts.ts` with `COMPLETION_PROMPT` and `ENHANCEMENT_PROMPT`
     - Include instructions for maintaining consistency, semantic HTML5, accessibility
     - Support originalPrompt and referenceImage context in prompts

@@ -144,3 +144,11 @@ export {
   errorHandlingService,
 } from './errorHandling';
 export type { RetryOptions, RateLimitResponse } from './errorHandling';
+
+// Beautify Services
+export {
+  GENERATION_MARKER,
+  hasGenerationMarker,
+  detectCompleteness,
+  completenessDetector,
+} from './beautify';
