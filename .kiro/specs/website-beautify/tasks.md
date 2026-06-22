@@ -94,7 +94,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Create `src/services/beautify/index.ts` to export all beautify services
     - _Requirements: 2.1, 3.1_
 
-- [ ] 5. Implement Beautify API endpoint
+- [x] 5. Implement Beautify API endpoint
   - [x] 5.1 Create `/api/beautify/stream` route
     - Create `src/app/api/beautify/stream/route.ts`
     - Set `maxDuration = 120` seconds
@@ -137,7 +137,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Include originalPrompt in beautification context
     - _Requirements: 4.6, 0.5, 0.6_
 
-  - [~] 5.10 Wire up completeness detection and beautification service
+  - [x] 5.10 Wire up completeness detection and beautification service
     - Call CompletenessDetector to analyze website
     - Call BeautifyService with appropriate mode
     - Stream events to client

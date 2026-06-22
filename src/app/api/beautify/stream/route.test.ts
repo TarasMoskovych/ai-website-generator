@@ -10,7 +10,7 @@
 
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import type { BeautifyStreamRequest, ReferenceImageMimeType } from '@/types/beautify';
+import type { BeautifyStreamRequest, ReferenceImageMimeType, BeautifyStreamEvent } from '@/types/beautify';
 
 /**
  * Result of authentication header validation
