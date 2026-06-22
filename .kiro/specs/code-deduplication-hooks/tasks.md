@@ -137,7 +137,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
 - [~] 7. Checkpoint - Verify All Custom Hooks
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Refactor WebsiteCard Component
+- [x] 8. Refactor WebsiteCard Component
   - [x] 8.1 Replace inline icons with Icons module imports in WebsiteCard
     - Update `src/components/WebsiteCard.tsx`
     - Remove inline icon definitions
@@ -145,49 +145,49 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Verify all existing functionality is preserved
     - _Requirements: 12.1, 12.2, 12.3_
 
-  - [~] 8.2 Write integration test for WebsiteCard component
+  - [x] 8.2 Write integration test for WebsiteCard component
     - Verify WebsiteCard renders correctly with new icon imports
     - Verify all interactive elements still function
     - _Requirements: 12.3, 13.1_
 
 - [ ] 9. Refactor Dashboard Page
-  - [~] 9.1 Replace website fetching logic with useWebsites hook in Dashboard
+  - [x] 9.1 Replace website fetching logic with useWebsites hook in Dashboard
     - Update Dashboard page component
     - Import and use useWebsites hook for fetching user websites
     - Remove inline fetching logic and state management
     - Wire up items, isLoading, error, currentPage, totalPages, fetchPage, refresh
     - _Requirements: 7.1, 7.3_
 
-  - [~] 9.2 Replace inline icons with Icons module imports in Dashboard
+  - [x] 9.2 Replace inline icons with Icons module imports in Dashboard
     - Remove inline icon definitions
     - Import icons from Icons module
     - _Requirements: 7.2_
 
-  - [~] 9.3 Write integration test for Dashboard page
+  - [-] 9.3 Write integration test for Dashboard page
     - Verify Dashboard renders correctly with new hooks
     - Verify pagination, deletion, title editing, and beautify navigation work
     - _Requirements: 7.3, 7.4, 13.1_
 
 - [ ] 10. Refactor Showcase Page
-  - [~] 10.1 Replace website fetching logic with useShowcaseWebsites hook in Showcase
+  - [x] 10.1 Replace website fetching logic with useShowcaseWebsites hook in Showcase
     - Update Showcase page component
     - Import and use useShowcaseWebsites hook
     - Remove inline fetching logic and state management
     - Wire up items, isLoading, error, currentPage, totalPages, totalCount, fetchPage
     - _Requirements: 8.1, 8.4_
 
-  - [~] 10.2 Replace inline Pagination with shared Pagination component in Showcase
+  - [x] 10.2 Replace inline Pagination with shared Pagination component in Showcase
     - Remove inline Pagination component definition
     - Import Pagination from `src/components/Pagination.tsx`
     - Pass currentPage, totalPages, and onPageChange props
     - _Requirements: 6.1, 6.2, 6.4_
 
-  - [~] 10.3 Replace inline icons with Icons module imports in Showcase
+  - [x] 10.3 Replace inline icons with Icons module imports in Showcase
     - Remove inline ChevronLeftIcon and ChevronRightIcon definitions
     - Import icons from Icons module
     - _Requirements: 6.3, 8.2_
 
-  - [~] 10.4 Write integration test for Showcase page
+  - [-] 10.4 Write integration test for Showcase page
     - Verify Showcase renders correctly with new hooks and components
     - Verify pagination works correctly
     - _Requirements: 8.3, 8.4, 13.1_
@@ -196,13 +196,13 @@ This implementation plan refactors duplicated code patterns across the AI Websit
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 12. Refactor Home Page Community Showcase
-  - [~] 12.1 Replace fetching logic with useShowcaseWebsites hook in CommunityShowcase
+  - [-] 12.1 Replace fetching logic with useShowcaseWebsites hook in CommunityShowcase
     - Update CommunityShowcase component on home page
     - Import and use useShowcaseWebsites hook with pageSize of 6
     - Remove inline fetching logic
     - _Requirements: 9.1, 9.3_
 
-  - [~] 12.2 Replace inline icons with Icons module imports in CommunityShowcase
+  - [-] 12.2 Replace inline icons with Icons module imports in CommunityShowcase
     - Remove inline icon definitions
     - Import icons from Icons module
     - _Requirements: 9.2_

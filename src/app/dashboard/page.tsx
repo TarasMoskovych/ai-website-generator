@@ -29,7 +29,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute, useAuth } from '@/components/auth';
 import { AppHeader } from '@/components/layout';
@@ -37,6 +37,8 @@ import { WebsiteCard } from '@/components/WebsiteCard';
 import { Pagination } from '@/components/Pagination';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { GlobeIcon, PlusIcon } from '@/components/icons';
+import { useWebsites } from '@/hooks/useWebsites';
 import websiteRepository from '@/services/websiteRepository';
 import type { GeneratedWebsite } from '@/types/website';
 
@@ -44,31 +46,6 @@ import type { GeneratedWebsite } from '@/types/website';
  * Page size constant (Requirement 6.5: 12 items per page)
  */
 const PAGE_SIZE = 12;
-
-/**
- * Globe icon for showcase link
- * Requirement 1.3: Visual icon for recognizability and consistency with showcase branding
- * Requirement 3.4: aria-hidden="true" to prevent redundant announcements by screen readers
- */
-function GlobeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-      <path d="M2 12h20" />
-    </svg>
-  );
-}
 
 /**
  * ShowcaseLink Component
@@ -126,17 +103,22 @@ function LoadingSpinner() {
 /**
  * Dashboard page content component
  * Handles data fetching, website list rendering, and pagination
+ * Uses useWebsites hook for website fetching (Requirement 7.1)
  */
 function DashboardContent() {
   const router = useRouter();
   const { user } = useAuth();
-  const [websites, setWebsites] = useState<GeneratedWebsite[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Pagination state (Requirement 6.5)
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  // Use useWebsites hook for fetching user websites (Requirement 7.1)
+  const {
+    items: websites,
+    isLoading,
+    error,
+    currentPage,
+    totalPages,
+    fetchPage,
+    refresh,
+  } = useWebsites(user?.uid ?? '', { pageSize: PAGE_SIZE });
 
   // Deletion state (Requirements 7.1-7.5)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -145,49 +127,14 @@ function DashboardContent() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   /**
-   * Fetch user's websites with pagination
-   * Requirement 6.1: Retrieve websites belonging to the authenticated user
-   * Requirement 6.5: Display 12 websites per page with pagination controls
-   */
-  const fetchWebsites = useCallback(async (page: number) => {
-    if (!user) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await websiteRepository.getAllByUser(user.uid, {
-        page,
-        pageSize: PAGE_SIZE,
-      });
-      setWebsites(result.items);
-      setTotalPages(result.totalPages);
-      setCurrentPage(page);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load websites';
-      setError(message);
-      console.error('Error fetching websites:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
-
-  /**
-   * Fetch websites on mount and when user changes
-   */
-  useEffect(() => {
-    fetchWebsites(1);
-  }, [fetchWebsites]);
-
-  /**
    * Handle page change from Pagination component
    * Requirement 6.5: Fetch pages on navigation
    */
   const handlePageChange = useCallback((page: number) => {
-    fetchWebsites(page);
+    fetchPage(page);
     // Scroll to top of the page for better UX
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [fetchWebsites]);
+  }, [fetchPage]);
 
   /**
    * Handle website card click - navigate to preview page
@@ -239,17 +186,14 @@ function DashboardContent() {
     try {
       await websiteRepository.delete(websiteToDelete.id);
 
-      // Update local state to remove the deleted website without page refresh
-      // Requirement 7.5: Update list within 1 second without page refresh
-      setWebsites((prev) => prev.filter((w) => w.id !== websiteToDelete.id));
-
+      // Refresh the current page to update the list
       // If current page becomes empty after deletion, go to previous page
       const remainingOnPage = websites.length - 1;
       if (remainingOnPage === 0 && currentPage > 1) {
-        fetchWebsites(currentPage - 1);
-      } else if (remainingOnPage > 0) {
-        // Refetch to get correct pagination and potentially fill the page
-        fetchWebsites(currentPage);
+        fetchPage(currentPage - 1);
+      } else {
+        // Refresh current page to get correct pagination
+        refresh();
       }
 
       // Close dialog
@@ -262,7 +206,7 @@ function DashboardContent() {
     } finally {
       setIsDeleting(false);
     }
-  }, [websiteToDelete, websites.length, currentPage, fetchWebsites]);
+  }, [websiteToDelete, websites.length, currentPage, fetchPage, refresh]);
 
   /**
    * Handle deletion cancellation
@@ -282,18 +226,14 @@ function DashboardContent() {
     async (id: string, newTitle: string) => {
       try {
         await websiteRepository.update(id, { title: newTitle });
-        // Update local state to reflect the change
-        setWebsites((prev) =>
-          prev.map((website) =>
-            website.id === id ? { ...website, title: newTitle } : website
-          )
-        );
+        // Refresh to get the updated data
+        refresh();
       } catch (err) {
         console.error('Error updating title:', err);
         // Could add error toast here
       }
     },
-    []
+    [refresh]
   );
 
   // Show loading state
@@ -309,8 +249,8 @@ function DashboardContent() {
         <div className="w-full max-w-md">
           <ErrorMessage
             message={error}
-            onDismiss={() => setError(null)}
-            onRetry={() => fetchWebsites(currentPage)}
+            onDismiss={() => refresh()}
+            onRetry={() => refresh()}
           />
         </div>
         <p className="text-muted-foreground text-sm text-center mt-2">
@@ -372,20 +312,7 @@ function DashboardContent() {
             transition-colors
           "
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-5 w-5"
-            aria-hidden="true"
-          >
-            <path d="M12 5v14" />
-            <path d="M5 12h14" />
-          </svg>
+          <PlusIcon className="h-5 w-5" />
           Create Your First Website
         </a>
       </div>
@@ -484,20 +411,7 @@ export default function DashboardPage() {
                     transition-colors
                   "
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 5v14" />
-                    <path d="M5 12h14" />
-                  </svg>
+                  <PlusIcon className="h-4 w-4" />
                   New Website
                 </a>
               </div>

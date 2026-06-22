@@ -9,14 +9,15 @@
  * - 23.9: Display thumbnail, title, and creator name
  * - 23.10: Only include websites where isPublic AND isShowcased are true
  * - 23.13: Accessible without authentication
+ * - 8.1, 8.4: Use useShowcaseWebsites hook for fetching
  */
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import websiteRepository, { type PaginatedResult } from '@/services/websiteRepository';
+import { useShowcaseWebsites } from '@/hooks/useShowcaseWebsites';
 import type { ShowcasedWebsite } from '@/types/website';
 
 /**
@@ -105,6 +106,8 @@ function ChevronRightIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+
 
 /**
  * Loading skeleton for website cards
@@ -311,48 +314,35 @@ function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) 
   );
 }
 
+
+
 /**
  * Showcase page component
+ * Uses useShowcaseWebsites hook for fetching showcased websites with pagination
+ * Requirements: 8.1, 8.4
  */
 export default function ShowcasePage() {
-  const [data, setData] = useState<PaginatedResult<ShowcasedWebsite> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  /**
-   * Fetch showcased websites
-   */
-  const fetchShowcasedWebsites = useCallback(async (page: number) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await websiteRepository.getShowcasedWebsites({ page, pageSize: 12 });
-      setData(result);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load showcased websites';
-      setError(message);
-      console.error('Error fetching showcased websites:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  /**
-   * Initial fetch
-   */
-  useEffect(() => {
-    fetchShowcasedWebsites(currentPage);
-  }, [fetchShowcasedWebsites, currentPage]);
+  // Use the useShowcaseWebsites hook for data fetching
+  // Requirement 8.1: Import and use useShowcaseWebsites_Hook for fetching showcased websites
+  const {
+    items,
+    isLoading,
+    error,
+    currentPage,
+    totalPages,
+    totalCount,
+    fetchPage,
+    refresh,
+  } = useShowcaseWebsites({ pageSize: 12 });
 
   /**
    * Handle page change
+   * Requirement 8.4: Wire up fetchPage for pagination
    */
   const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
+    fetchPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [fetchPage]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
@@ -418,7 +408,7 @@ export default function ShowcasePage() {
             <p className="text-destructive mb-4">{error}</p>
             <button
               type="button"
-              onClick={() => fetchShowcasedWebsites(currentPage)}
+              onClick={() => refresh()}
               className="
                 inline-flex items-center justify-center
                 rounded-md bg-primary px-4 py-2
@@ -433,7 +423,7 @@ export default function ShowcasePage() {
         )}
 
         {/* Loading state */}
-        {isLoading && !data && (
+        {isLoading && items.length === 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
             {Array.from({ length: 8 }).map((_, i) => (
               <WebsiteCardSkeleton key={i} />
@@ -442,15 +432,15 @@ export default function ShowcasePage() {
         )}
 
         {/* Empty state */}
-        {!isLoading && data && data.items.length === 0 && (
+        {!isLoading && items.length === 0 && !error && (
           <EmptyState />
         )}
 
         {/* Website grid */}
-        {data && data.items.length > 0 && (
+        {items.length > 0 && (
           <>
             <div className="flex flex-wrap justify-center gap-6">
-              {data.items.map((website) => (
+              {items.map((website) => (
                 <div key={website.id} className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] xl:w-[calc(25%-1.125rem)]">
                   <WebsiteCard website={website} />
                 </div>
@@ -460,15 +450,15 @@ export default function ShowcasePage() {
             {/* Pagination */}
             <div className="mt-10">
               <Pagination
-                currentPage={data.page}
-                totalPages={data.totalPages}
+                currentPage={currentPage}
+                totalPages={totalPages}
                 onPageChange={handlePageChange}
               />
             </div>
 
             {/* Results info */}
             <p className="text-center text-sm text-muted-foreground mt-4">
-              Showing {(data.page - 1) * data.pageSize + 1}-{Math.min(data.page * data.pageSize, data.totalCount)} of {data.totalCount} websites
+              Showing {(currentPage - 1) * 12 + 1}-{Math.min(currentPage * 12, totalCount)} of {totalCount} websites
             </p>
           </>
         )}
