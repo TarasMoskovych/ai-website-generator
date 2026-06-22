@@ -61,7 +61,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
 - [~] 3. Checkpoint - Verify Icons and useWebsites
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Create useShowcaseWebsites Custom Hook
+- [x] 4. Create useShowcaseWebsites Custom Hook
   - [x] 4.1 Implement useShowcaseWebsites hook
     - Create `src/hooks/useShowcaseWebsites.ts`
     - Implement UseShowcaseWebsitesOptions interface with optional pageSize (default: 12)
@@ -72,24 +72,24 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Handle error states with descriptive messages
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-  - [~] 4.2 Write unit tests for useShowcaseWebsites hook
+  - [x] 4.2 Write unit tests for useShowcaseWebsites hook
     - Create `src/hooks/useShowcaseWebsites.test.ts`
     - Test hook accepts optional pageSize with default of 12
     - Test initial fetch triggered on mount
     - Test error handling works correctly
     - _Requirements: 3.1, 3.2, 3.5, 13.2, 13.3_
 
-  - [~] 4.3 Write property test for useShowcaseWebsites Return Structure
+  - [x] 4.3 Write property test for useShowcaseWebsites Return Structure
     - **Property 4: useShowcaseWebsites Return Structure**
     - **Validates: Requirements 3.3**
     - For any invocation with valid options, verify hook returns all required fields including totalCount
 
-  - [~] 4.4 Write property test for useShowcaseWebsites Pagination Behavior
+  - [x] 4.4 Write property test for useShowcaseWebsites Pagination Behavior
     - **Property 5: useShowcaseWebsites Pagination Behavior**
     - **Validates: Requirements 3.4**
     - For any valid page number, verify fetchPage updates state correctly
 
-- [ ] 5. Create useSSEStream Custom Hook
+- [x] 5. Create useSSEStream Custom Hook
   - [x] 5.1 Implement useSSEStream hook
     - Create `src/hooks/useSSEStream.ts`
     - Implement SSEEvent interface with type and data fields
@@ -102,7 +102,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Accumulate streamingContent for live preview display
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8_
 
-  - [~] 5.2 Write unit tests for useSSEStream hook
+  - [x] 5.2 Write unit tests for useSSEStream hook
     - Create `src/hooks/useSSEStream.test.ts`
     - Test hook accepts config object with all required fields
     - Test start initiates fetch with correct config
@@ -110,17 +110,17 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Test abort doesn't set error state
     - _Requirements: 4.1, 4.3, 4.5, 4.7, 13.2, 13.3_
 
-  - [~] 5.3 Write property test for useSSEStream Return Structure
+  - [x] 5.3 Write property test for useSSEStream Return Structure
     - **Property 6: useSSEStream Return Structure**
     - **Validates: Requirements 4.2**
     - For any valid SSEStreamConfig, verify hook returns all required fields
 
-  - [~] 5.4 Write property test for SSE Event Parsing
+  - [x] 5.4 Write property test for SSE Event Parsing
     - **Property 7: SSE Event Parsing**
     - **Validates: Requirements 4.4**
     - For any valid SSE event format, verify correct parsing and onEvent callback invocation
 
-- [ ] 6. Enhance useFirebaseAuth Hook
+- [x] 6. Enhance useFirebaseAuth Hook
   - [x] 6.1 Add getIdToken function to existing useAuth hook
     - Modify `src/components/auth/AuthProvider.tsx` or create `src/hooks/useFirebaseAuth.ts`
     - Implement getIdToken function that calls auth.currentUser?.getIdToken()
@@ -129,7 +129,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Integrate into existing AuthContext
     - _Requirements: 5.1, 5.2, 5.3_
 
-  - [~] 6.2 Write unit tests for getIdToken function
+  - [x] 6.2 Write unit tests for getIdToken function
     - Test getIdToken returns token when user is authenticated
     - Test getIdToken throws "User not authenticated" when no user
     - _Requirements: 5.1, 5.2, 13.2, 13.3_
