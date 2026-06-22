@@ -35,11 +35,11 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Classify as incomplete when structural elements are missing
     - _Requirements: 1.5, 1.6_
 
-  - [~] 2.4 Write property test for missing structural elements (Property 5)
+  - [x] 2.4 Write property test for missing structural elements (Property 5)
     - **Property 5: Missing Structural Elements Implies Incomplete**
     - **Validates: Requirements 1.5, 1.6**
 
-  - [~] 2.5 Implement truncation detection
+  - [x] 2.5 Implement truncation detection
     - Detect unclosed HTML tags, cut-off text, and incomplete CSS rules
     - _Requirements: 1.7, 1.8_
 
@@ -146,25 +146,25 @@ The implementation follows the existing Next.js App Router architecture with Typ
 - [~] 6. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. Update website repository for originalPrompt storage
+- [x] 7. Update website repository for originalPrompt storage
   - [x] 7.1 Update websiteRepository to store originalPrompt
     - Modify `src/services/websiteRepository.ts` to handle originalPrompt field
     - Update create and update methods to include originalPrompt
     - _Requirements: 0.1, 0.4_
 
-  - [~] 7.2 Write property test for originalPrompt round-trip (Property 1)
+  - [x] 7.2 Write property test for originalPrompt round-trip (Property 1)
     - **Property 1: Original Prompt Storage Round-Trip**
     - **Validates: Requirements 0.1, 0.4**
 
-  - [~] 7.3 Write property test for originalPrompt length validation (Property 2)
+  - [x] 7.3 Write property test for originalPrompt length validation (Property 2)
     - **Property 2: Original Prompt Length Validation**
     - **Validates: Requirements 0.2**
 
-  - [~] 7.4 Write property test for screenshot generation (Property 3)
+  - [x] 7.4 Write property test for screenshot generation (Property 3)
     - **Property 3: Screenshot Generation Excludes Original Prompt**
     - **Validates: Requirements 0.3**
 
-  - [~] 7.5 Update generation services to store originalPrompt
+  - [x] 7.5 Update generation services to store originalPrompt
     - Modify text generation to store prompt in originalPrompt field
     - Modify screenshot generation to set originalPrompt to null
     - _Requirements: 0.1, 0.3_
