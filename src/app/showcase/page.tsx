@@ -10,6 +10,7 @@
  * - 23.10: Only include websites where isPublic AND isShowcased are true
  * - 23.13: Accessible without authentication
  * - 8.1, 8.4: Use useShowcaseWebsites hook for fetching
+ * - 6.3, 8.2: Use Icons module for shared icons
  */
 
 'use client';
@@ -18,94 +19,8 @@ import { useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useShowcaseWebsites } from '@/hooks/useShowcaseWebsites';
+import { ArrowLeftIcon, GlobeIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
 import type { ShowcasedWebsite } from '@/types/website';
-
-/**
- * Arrow left icon for back navigation
- */
-function ArrowLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="m12 19-7-7 7-7" />
-      <path d="M19 12H5" />
-    </svg>
-  );
-}
-
-/**
- * Globe icon for showcase branding
- */
-function GlobeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-      <path d="M2 12h20" />
-    </svg>
-  );
-}
-
-/**
- * Chevron left icon
- */
-function ChevronLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="m15 18-6-6 6-6" />
-    </svg>
-  );
-}
-
-/**
- * Chevron right icon
- */
-function ChevronRightIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}
 
 
 

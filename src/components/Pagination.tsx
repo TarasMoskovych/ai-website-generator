@@ -4,6 +4,7 @@
  *
  * Requirements:
  * - 6.5: Display 12 websites per page with pagination controls showing page numbers and next/previous navigation buttons
+ * - Uses Icons module for shared ChevronLeftIcon and ChevronRightIcon
  *
  * This component:
  * 1. Displays page numbers for navigation
@@ -16,6 +17,7 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
+import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
 
 /**
  * Pagination props following the design specification
@@ -27,48 +29,6 @@ export interface PaginationProps {
   totalPages: number;
   /** Callback when page changes */
   onPageChange: (page: number) => void;
-}
-
-/**
- * Chevron Left icon for previous button
- */
-function ChevronLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="m15 18-6-6 6-6" />
-    </svg>
-  );
-}
-
-/**
- * Chevron Right icon for next button
- */
-function ChevronRightIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
 }
 
 /**
