@@ -137,6 +137,18 @@ function DashboardContent() {
   );
 
   /**
+   * Handle beautify button click - navigate to preview page with beautify parameter
+   * Requirement 6.3 (beautify): Navigate to the website preview page and automatically trigger beautification
+   * Requirement 6.4 (beautify): Pass a `beautify=true` query parameter to trigger automatic beautification
+   */
+  const handleBeautify = useCallback(
+    (id: string) => {
+      router.push(`/website/${id}?beautify=true`);
+    },
+    [router]
+  );
+
+  /**
    * Handle website deletion - open confirmation dialog
    * Requirement 7.1: Display a confirmation dialog that identifies the website by title
    */
@@ -338,6 +350,7 @@ function DashboardContent() {
             onClick={handleWebsiteClick}
             onDelete={handleDelete}
             onTitleEdit={handleTitleEdit}
+            onBeautify={handleBeautify}
           />
         ))}
       </div>

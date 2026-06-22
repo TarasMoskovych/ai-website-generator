@@ -4,6 +4,8 @@
  *
  * Requirements:
  * - 6.2: Display each Generated_Website with its thumbnail, title, creation date, and input type indicator
+ * - 6.1 (beautify): Display a Beautify_Button alongside existing action buttons on hover
+ * - 6.2 (beautify): Display a sparkle or wand icon consistent with the preview page button
  * - 11.4: Display an edit control for each Generated_Website title that allows inline editing
  * - 11.7: When a user submits a valid edited title, persist the updated title and display a confirmation indicator
  *
@@ -13,8 +15,9 @@
  * 3. Displays creation date formatted for readability
  * 4. Shows input type indicator (text or screenshot)
  * 5. Includes delete button
- * 6. Accessible with proper ARIA attributes and keyboard navigation
- * 7. Supports dark mode with WCAG AA compliant colors
+ * 6. Includes beautify button (visible on hover)
+ * 7. Accessible with proper ARIA attributes and keyboard navigation
+ * 8. Supports dark mode with WCAG AA compliant colors
  */
 
 'use client';
@@ -36,6 +39,8 @@ export interface WebsiteCardProps {
   onTitleEdit: (id: string, newTitle: string) => void;
   /** Callback when the card is clicked (for navigation) */
   onClick?: (id: string) => void;
+  /** Callback when the beautify button is clicked */
+  onBeautify?: (id: string) => void;
 }
 
 /**
@@ -196,6 +201,32 @@ function GlobeIcon({ className }: { className?: string }) {
 }
 
 /**
+ * Sparkles icon for beautify button
+ * Requirement 6.2 (beautify): Display a sparkle or wand icon
+ */
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+      <path d="M5 3v4" />
+      <path d="M19 17v4" />
+      <path d="M3 5h4" />
+      <path d="M17 19h4" />
+    </svg>
+  );
+}
+
+/**
  * Format a date string for display
  */
 function formatDate(dateString: string): string {
@@ -231,6 +262,7 @@ function formatDate(dateString: string): string {
  *   onDelete={(id) => handleDelete(id)}
  *   onTitleEdit={(id, newTitle) => handleTitleEdit(id, newTitle)}
  *   onClick={(id) => router.push(`/website/${id}`)}
+ *   onBeautify={(id) => router.push(`/website/${id}?beautify=true`)}
  * />
  */
 export function WebsiteCard({
@@ -238,6 +270,7 @@ export function WebsiteCard({
   onDelete,
   onTitleEdit,
   onClick,
+  onBeautify,
 }: WebsiteCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(website.title);
@@ -347,6 +380,17 @@ export function WebsiteCard({
     e.stopPropagation();
     onDelete(website.id);
   }, [website.id, onDelete]);
+
+  /**
+   * Handle beautify button click
+   * Requirement 6.1, 6.3 (beautify): Trigger beautification workflow
+   */
+  const handleBeautifyClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onBeautify) {
+      onBeautify(website.id);
+    }
+  }, [website.id, onBeautify]);
 
   /**
    * Handle card click (for navigation)
@@ -471,33 +515,67 @@ export function WebsiteCard({
           </div>
         )}
 
-        {/* Delete button */}
-        <button
-          type="button"
-          onClick={handleDeleteClick}
+        {/* Action buttons container - visible on hover */}
+        <div
           className="
             absolute top-2 right-2
-            flex items-center justify-center
-            rounded-full
-            bg-background/90
-            backdrop-blur-sm
-            p-1.5
-            text-muted-foreground
+            flex items-center gap-1
             opacity-0
-            transition-all duration-200
-            hover:bg-destructive
-            hover:text-destructive-foreground
-            focus-visible:opacity-100
-            focus-visible:outline-none
-            focus-visible:ring-2
-            focus-visible:ring-ring
-            focus-visible:ring-offset-2
+            transition-opacity duration-200
             group-hover:opacity-100
           "
-          aria-label={`Delete ${website.title}`}
         >
-          <TrashIcon className="h-4 w-4" />
-        </button>
+          {/* Beautify button - Requirement 6.1, 6.2 (beautify) */}
+          {onBeautify && (
+            <button
+              type="button"
+              onClick={handleBeautifyClick}
+              className="
+                flex items-center justify-center
+                rounded-full
+                bg-background/90
+                backdrop-blur-sm
+                p-1.5
+                text-muted-foreground
+                transition-all duration-200
+                hover:bg-primary/10
+                hover:text-primary
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-ring
+                focus-visible:ring-offset-2
+              "
+              aria-label={`Beautify ${website.title}`}
+              title="Beautify website"
+            >
+              <SparklesIcon className="h-4 w-4" />
+            </button>
+          )}
+
+          {/* Delete button */}
+          <button
+            type="button"
+            onClick={handleDeleteClick}
+            className="
+              flex items-center justify-center
+              rounded-full
+              bg-background/90
+              backdrop-blur-sm
+              p-1.5
+              text-muted-foreground
+              transition-all duration-200
+              hover:bg-destructive
+              hover:text-destructive-foreground
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-ring
+              focus-visible:ring-offset-2
+            "
+            aria-label={`Delete ${website.title}`}
+          >
+            <TrashIcon className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* Content */}

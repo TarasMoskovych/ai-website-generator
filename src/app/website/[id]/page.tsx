@@ -29,6 +29,7 @@ import { PreviewRenderer } from '@/components/PreviewRenderer';
 import { CodeEditor } from '@/components/CodeEditor';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { DownloadDialog, type DownloadFormat } from '@/components/DownloadDialog';
+import { BeautifyButton } from '@/components/beautify/BeautifyButton';
 import websiteRepository from '@/services/websiteRepository';
 import { generateSingleFile, generateZipArchive, downloadBlob } from '@/services/downloadService';
 import { sanitize } from '@/services/htmlSanitizer';
@@ -399,6 +400,11 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
   const [isShowcased, setIsShowcased] = useState(false);
   const [isTogglingShowcase, setIsTogglingShowcase] = useState(false);
 
+  // Beautify state
+  // Requirement 5.1: Display a Beautify_Button in the action toolbar
+  // Requirement 5.4: Display loading spinner and be disabled while beautification is in progress
+  const [isBeautifying, setIsBeautifying] = useState(false);
+
   // Refs for auto-save debouncing
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const originalHtmlRef = useRef<string>('');
@@ -619,6 +625,33 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
   }, [website, isShowcased, isTogglingShowcase]);
 
   /**
+   * Handle beautify button click
+   * Requirement 5.1: Display a Beautify_Button in the action toolbar
+   * Requirement 5.3: Initiate a beautification request when clicked
+   *
+   * This handler triggers the beautification workflow for the current website.
+   * The full workflow implementation (BeautifyOptionsDialog, streaming, comparison)
+   * is handled in Task 16.2.
+   */
+  const handleBeautifyClick = useCallback(() => {
+    if (!website || isBeautifying) return;
+
+    // TODO: Task 16.2 will implement the full beautification flow:
+    // 1. Open BeautifyOptionsDialog
+    // 2. Handle beautification request with current HTML/CSS
+    // 3. Show BeautifyLoadingOverlay during process
+    // 4. Display PreviewComparison on completion
+    // 5. Show SaveOptionsDialog on accept
+    setIsBeautifying(true);
+
+    // Placeholder: Reset loading state after a brief delay
+    // This will be replaced with actual beautification logic in Task 16.2
+    setTimeout(() => {
+      setIsBeautifying(false);
+    }, 100);
+  }, [website, isBeautifying]);
+
+  /**
    * Handle download format selection
    * Requirement 10.5: Preserve user modifications when downloading
    * Uses the edited HTML and CSS, not the original
@@ -792,6 +825,18 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
             <MaximizeIcon className="h-4 w-4" />
             Preview
           </button>
+
+          {/* Beautify button */}
+          {/* Requirement 5.1: Display BeautifyButton in action toolbar alongside existing buttons */}
+          {/* Requirement 5.2: Display sparkle/wand icon to indicate enhancement functionality */}
+          {/* Requirement 5.3: Initiate beautification request when clicked */}
+          {/* Requirement 5.4: Display loading spinner and be disabled while in progress */}
+          <BeautifyButton
+            onClick={handleBeautifyClick}
+            isLoading={isBeautifying}
+            disabled={!website || hasUnsavedChanges}
+            variant="secondary"
+          />
 
           {/* Download button */}
           <button

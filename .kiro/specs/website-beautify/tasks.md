@@ -309,7 +309,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 16. Integrate BeautifyButton on Website Preview Page
-  - [~] 16.1 Add BeautifyButton to preview page toolbar
+  - [x] 16.1 Add BeautifyButton to preview page toolbar
     - Add BeautifyButton alongside Preview and Download buttons
     - _Requirements: 5.1_
 
@@ -326,7 +326,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - _Requirements: 6.5_
 
 - [ ] 17. Integrate BeautifyButton on Dashboard WebsiteCard
-  - [~] 17.1 Add BeautifyButton to WebsiteCard hover state
+  - [x] 17.1 Add BeautifyButton to WebsiteCard hover state
     - Show BeautifyButton alongside edit and delete buttons on hover
     - _Requirements: 6.1, 6.2_
 
@@ -334,8 +334,8 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - On click, navigate to preview page with `beautify=true` query parameter
     - _Requirements: 6.3, 6.4_
 
-- [ ] 18. Create beautify components index file
-  - [~] 18.1 Create components index
+- [x] 18. Create beautify components index file
+  - [x] 18.1 Create components index
     - Create `src/components/beautify/index.ts` to export all beautify components
     - _Requirements: 5.1, 7.1, 8.1, 9.1_
 
