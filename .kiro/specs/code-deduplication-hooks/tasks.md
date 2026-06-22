@@ -28,7 +28,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - **Validates: Requirements 1.2, 1.3**
     - For any icon component with any valid className string, verify aria-hidden="true" and className application
 
-- [ ] 2. Create useWebsites Custom Hook
+- [x] 2. Create useWebsites Custom Hook
   - [x] 2.1 Implement useWebsites hook
     - Create `src/hooks/useWebsites.ts`
     - Implement UseWebsitesOptions interface with optional pageSize (default: 12)
@@ -40,7 +40,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Handle error states with descriptive messages
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
 
-  - [~] 2.2 Write unit tests for useWebsites hook
+  - [x] 2.2 Write unit tests for useWebsites hook
     - Create `src/hooks/useWebsites.test.ts`
     - Test hook accepts userId and optional pageSize with default of 12
     - Test initial fetch triggered on mount with correct userId
@@ -48,12 +48,12 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - Test refresh re-fetches current page
     - _Requirements: 2.1, 2.2, 2.5, 2.6, 13.2, 13.3_
 
-  - [~] 2.3 Write property test for useWebsites Return Structure
+  - [x] 2.3 Write property test for useWebsites Return Structure
     - **Property 2: useWebsites Return Structure**
     - **Validates: Requirements 2.3**
     - For any valid userId, verify hook returns all required fields with correct types
 
-  - [~] 2.4 Write property test for useWebsites Pagination Behavior
+  - [x] 2.4 Write property test for useWebsites Pagination Behavior
     - **Property 3: useWebsites Pagination Behavior**
     - **Validates: Requirements 2.4**
     - For any valid page number, verify fetchPage updates currentPage and triggers fetch
@@ -62,7 +62,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Create useShowcaseWebsites Custom Hook
-  - [~] 4.1 Implement useShowcaseWebsites hook
+  - [x] 4.1 Implement useShowcaseWebsites hook
     - Create `src/hooks/useShowcaseWebsites.ts`
     - Implement UseShowcaseWebsitesOptions interface with optional pageSize (default: 12)
     - Implement UseShowcaseWebsitesReturn interface with items, isLoading, error, currentPage, totalPages, totalCount, fetchPage, refresh
@@ -90,7 +90,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - For any valid page number, verify fetchPage updates state correctly
 
 - [ ] 5. Create useSSEStream Custom Hook
-  - [~] 5.1 Implement useSSEStream hook
+  - [x] 5.1 Implement useSSEStream hook
     - Create `src/hooks/useSSEStream.ts`
     - Implement SSEEvent interface with type and data fields
     - Implement UseSSEStreamConfig interface with url, method, headers, body, onEvent
@@ -121,7 +121,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
     - For any valid SSE event format, verify correct parsing and onEvent callback invocation
 
 - [ ] 6. Enhance useFirebaseAuth Hook
-  - [~] 6.1 Add getIdToken function to existing useAuth hook
+  - [x] 6.1 Add getIdToken function to existing useAuth hook
     - Modify `src/components/auth/AuthProvider.tsx` or create `src/hooks/useFirebaseAuth.ts`
     - Implement getIdToken function that calls auth.currentUser?.getIdToken()
     - Throw Error with message "User not authenticated" if no user

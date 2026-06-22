@@ -5,6 +5,7 @@
  * Requirements:
  * - 13.3: Create or update user session on successful authentication
  * - 13.5: Persist authentication session across browser sessions
+ * - 5.1, 5.2, 5.3: Provide getIdToken function for Firebase ID token retrieval
  *
  * This component:
  * 1. Creates an AuthContext with user state
@@ -12,6 +13,7 @@
  * 3. Provides signInWithGoogle and signOut functions through context
  * 4. Handles loading state while auth state is being determined
  * 5. Handles error state for auth failures
+ * 6. Provides getIdToken utility for authenticated API calls
  */
 
 'use client';
@@ -30,6 +32,7 @@ import {
   signOut as authSignOut,
   onAuthStateChange,
 } from '@/services/authService';
+import { auth } from '@/lib/firebase';
 
 /**
  * Auth context value interface
@@ -42,6 +45,12 @@ interface AuthContextValue extends AuthState {
   signOut: () => Promise<void>;
   /** Clear any auth errors */
   clearError: () => void;
+  /**
+   * Get the current user's Firebase ID token
+   * @throws Error with message "User not authenticated" if no user is signed in
+   * @returns Promise resolving to the ID token string
+   */
+  getIdToken: () => Promise<string>;
 }
 
 /**
@@ -181,6 +190,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   /**
+   * Get the current user's Firebase ID token
+   * Used for authenticating API requests
+   *
+   * Requirement 5.1: Export getIdToken function returning Promise<string>
+   * Requirement 5.2: Throw error if no user is authenticated
+   *
+   * @throws Error with message "User not authenticated" if no user is signed in
+   * @returns Promise resolving to the Firebase ID token string
+   */
+  const getIdToken = useCallback(async (): Promise<string> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('User not authenticated');
+    }
+    return currentUser.getIdToken();
+  }, []);
+
+  /**
    * Memoized context value to prevent unnecessary re-renders
    */
   const contextValue = useMemo<AuthContextValue>(
@@ -191,8 +218,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       signInWithGoogle,
       signOut,
       clearError,
+      getIdToken,
     }),
-    [state.user, state.loading, state.error, signInWithGoogle, signOut, clearError]
+    [state.user, state.loading, state.error, signInWithGoogle, signOut, clearError, getIdToken]
   );
 
   return (
