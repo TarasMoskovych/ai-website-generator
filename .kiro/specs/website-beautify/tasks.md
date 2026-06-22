@@ -106,7 +106,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Return 401 status for invalid/missing authentication
     - _Requirements: 4.2, 4.3_
 
-  - [~] 5.3 Write property test for authentication requirement (Property 9)
+  - [x] 5.3 Write property test for authentication requirement (Property 9)
     - **Property 9: Authentication Required for API Access**
     - **Validates: Requirements 4.2, 4.3**
 
@@ -115,7 +115,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Return 400 status for missing required fields
     - _Requirements: 4.4, 4.5_
 
-  - [~] 5.5 Write property test for required fields validation (Property 10)
+  - [x] 5.5 Write property test for required fields validation (Property 10)
     - **Property 10: Required Fields Validation**
     - **Validates: Requirements 4.4, 4.5**
 
@@ -124,15 +124,15 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Return 400 status for invalid MIME type
     - _Requirements: 4.7, 4.8_
 
-  - [~] 5.7 Write property test for MIME type validation (Property 11)
+  - [x] 5.7 Write property test for MIME type validation (Property 11)
     - **Property 11: Reference Image MIME Type Validation**
     - **Validates: Requirements 4.7, 4.8**
 
-  - [~] 5.8 Write property test for SSE response format (Property 12)
+  - [x] 5.8 Write property test for SSE response format (Property 12)
     - **Property 12: SSE Response Format**
     - **Validates: Requirements 4.9**
 
-  - [~] 5.9 Implement originalPrompt fetching
+  - [x] 5.9 Implement originalPrompt fetching
     - Fetch originalPrompt from Firestore if not provided in request
     - Include originalPrompt in beautification context
     - _Requirements: 4.6, 0.5, 0.6_

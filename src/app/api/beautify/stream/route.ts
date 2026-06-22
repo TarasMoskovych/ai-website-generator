@@ -9,6 +9,7 @@
  * - 4.1: POST endpoint at /api/beautify/stream
  * - 4.2, 4.3: Firebase authentication via Bearer token
  * - 4.4, 4.5: Request validation for required fields
+ * - 4.6: Fetch originalPrompt from Firestore if not provided
  * - 4.7, 4.8: Reference image MIME type validation
  * - 4.9: SSE response with Content-Type text/event-stream
  * - 4.11: Maximum duration of 120 seconds
@@ -19,6 +20,7 @@
 import { NextRequest } from 'next/server';
 import { verifyIdToken, isFirebaseAdminConfigured } from '@/lib/firebaseAdmin';
 import { beautifyWebsiteStream, detectCompleteness } from '@/services/beautify';
+import { getById as getWebsiteById } from '@/services/websiteRepository';
 import type { BeautifyStreamRequest, ReferenceImageMimeType, BeautifyStreamEvent } from '@/types/beautify';
 
 /**
@@ -255,6 +257,21 @@ export async function POST(request: NextRequest): Promise<Response> {
 
   const requestData = validation.data;
 
+  // Fetch originalPrompt from Firestore if not provided in request
+  // Validates: Requirements 4.6, 0.5, 0.6
+  let originalPrompt = requestData.originalPrompt;
+  if (!originalPrompt) {
+    try {
+      const website = await getWebsiteById(requestData.websiteId);
+      if (website?.originalPrompt) {
+        originalPrompt = website.originalPrompt;
+      }
+    } catch (error) {
+      // Log but don't fail - originalPrompt is optional context
+      console.warn('Failed to fetch originalPrompt from website:', error);
+    }
+  }
+
   // Create a readable stream for SSE response
   // Validates: Requirement 4.9 - SSE response with Content-Type text/event-stream
   const stream = new ReadableStream({
@@ -274,7 +291,7 @@ export async function POST(request: NextRequest): Promise<Response> {
           {
             html: requestData.html,
             css: requestData.css,
-            originalPrompt: requestData.originalPrompt,
+            originalPrompt: originalPrompt,
             referenceImage: requestData.referenceImage,
             referenceImageMimeType: requestData.referenceImageMimeType,
             completenessResult,
