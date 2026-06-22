@@ -52,27 +52,27 @@ This implementation adds a Community Showcase navigation link to the dashboard p
   - Verify positioning matches design specification
   - Ask the user if questions arise
 
-- [ ] 4. Write tests for ShowcaseLink component
-  - [~] 4.1 Write unit tests for component rendering
+- [x] 4. Write tests for ShowcaseLink component
+  - [x] 4.1 Write unit tests for component rendering
     - Test that link is visible in dashboard header (Req 1.1)
     - Test that text identifies destination as Community Showcase (Req 1.2)
     - Test that globe icon is present (Req 1.3)
     - Test that link has correct secondary styling (Req 1.5)
     - _Requirements: 1.1, 1.2, 1.3, 1.5_
 
-  - [~] 4.2 Write unit tests for navigation behavior
+  - [x] 4.2 Write unit tests for navigation behavior
     - Test that link has `href="/showcase"` (Req 2.1)
     - Test that link does not have `target="_blank"` (Req 2.2)
     - _Requirements: 2.1, 2.2_
 
-  - [~] 4.3 Write unit tests for accessibility
+  - [x] 4.3 Write unit tests for accessibility
     - Test keyboard focusability via Tab key (Req 3.1)
     - Test accessible name is present for screen readers (Req 3.2)
     - Test focus-visible ring class is applied (Req 3.3)
     - Test icon has `aria-hidden="true"` (Req 3.4)
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [~] 4.4 Write unit tests for responsive behavior
+  - [x] 4.4 Write unit tests for responsive behavior
     - Test icon and text visible at desktop size (Req 4.1)
     - Test icon and text visible at tablet size (Req 4.2)
     - Test icon visible with accessible text at mobile (Req 4.3)
