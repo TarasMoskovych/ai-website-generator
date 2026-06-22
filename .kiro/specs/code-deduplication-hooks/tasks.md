@@ -138,7 +138,7 @@ This implementation plan refactors duplicated code patterns across the AI Websit
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 8. Refactor WebsiteCard Component
-  - [~] 8.1 Replace inline icons with Icons module imports in WebsiteCard
+  - [x] 8.1 Replace inline icons with Icons module imports in WebsiteCard
     - Update `src/components/WebsiteCard.tsx`
     - Remove inline icon definitions
     - Import GlobeIcon, TextIcon, ImageIcon, EditIcon, CheckIcon, XIcon, TrashIcon, SparklesIcon from Icons module
