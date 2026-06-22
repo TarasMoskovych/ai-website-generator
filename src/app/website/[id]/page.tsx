@@ -59,7 +59,6 @@ import { generateSingleFile, generateZipArchive, downloadBlob } from '@/services
 import { sanitize } from '@/services/htmlSanitizer';
 import { useBeautifySave } from '@/hooks/useBeautifySave';
 import { getBeautifyError } from '@/lib/beautifyErrors';
-import { auth } from '@/lib/firebase';
 import type { GeneratedWebsite } from '@/types/website';
 import type { ViewportMode } from '@/lib/constants';
 import type { BeautifyDialogResult, BeautifyLoadingStage, BeautifyStreamEvent } from '@/types/beautify';
