@@ -9,6 +9,10 @@
  * - 10.6: Auto-save modifications to the repository
  * - 10.7: Display error message if saving modifications fails
  * - 4.1: Present download format options
+ * - 5.3: Initiate beautification request when Beautify button is clicked
+ * - 5.5: Display BeautifyLoadingOverlay during beautification process
+ * - 5.7: Display PreviewComparison on beautification completion
+ * - 5.8: Show SaveOptionsDialog on accept
  *
  * This page:
  * 1. Is protected - requires authentication
@@ -17,24 +21,37 @@
  * 4. Allows editing HTML and CSS with live preview updates
  * 5. Auto-saves modifications to the repository
  * 6. Provides download functionality with the edited content
+ * 7. Provides beautification workflow with streaming, comparison, and save options
  */
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, useRef, use, Suspense } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ProtectedRoute, useAuth } from '@/components/auth';
 import { AppHeader } from '@/components/layout';
 import { PreviewRenderer } from '@/components/PreviewRenderer';
 import { CodeEditor } from '@/components/CodeEditor';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
 import { DownloadDialog, type DownloadFormat } from '@/components/DownloadDialog';
-import { BeautifyButton } from '@/components/beautify/BeautifyButton';
+import {
+  BeautifyButton,
+  BeautifyOptionsDialog,
+  BeautifyLoadingOverlay,
+  PreviewComparison,
+  SaveOptionsDialog,
+  BeautifyErrorDisplay,
+} from '@/components/beautify';
 import websiteRepository from '@/services/websiteRepository';
 import { generateSingleFile, generateZipArchive, downloadBlob } from '@/services/downloadService';
 import { sanitize } from '@/services/htmlSanitizer';
+import { useBeautifySave } from '@/hooks/useBeautifySave';
+import { getBeautifyError } from '@/lib/beautifyErrors';
+import { auth } from '@/lib/firebase';
 import type { GeneratedWebsite } from '@/types/website';
 import type { ViewportMode } from '@/lib/constants';
+import type { BeautifyDialogResult, BeautifyLoadingStage, BeautifyStreamEvent } from '@/types/beautify';
+import type { BeautifyError } from '@/lib/beautifyErrors';
 
 /**
  * Auto-save debounce delay in milliseconds
@@ -362,6 +379,8 @@ function sanitizeFilename(title: string): string {
  */
 function WebsitePageContent({ websiteId }: { websiteId: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const { user } = useAuth();
 
   // Website data state
@@ -405,10 +424,29 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
   // Requirement 5.4: Display loading spinner and be disabled while beautification is in progress
   const [isBeautifying, setIsBeautifying] = useState(false);
 
+  // Beautify workflow state
+  // Requirement 5.3: Handle beautification workflow
+  const [showBeautifyOptions, setShowBeautifyOptions] = useState(false);
+  const [beautifyStage, setBeautifyStage] = useState<BeautifyLoadingStage>('analyzing');
+  const [beautifyStreamingContent, setBeautifyStreamingContent] = useState('');
+  const [isBeautifyPreviewExpanded, setIsBeautifyPreviewExpanded] = useState(false);
+  const [beautifiedHtml, setBeautifiedHtml] = useState('');
+  const [beautifiedCss, setBeautifiedCss] = useState('');
+  const [showPreviewComparison, setShowPreviewComparison] = useState(false);
+  const [showSaveOptions, setShowSaveOptions] = useState(false);
+  const [beautifyError, setBeautifyError] = useState<BeautifyError | null>(null);
+
+  // Abort controller for beautify cancellation
+  const beautifyAbortControllerRef = useRef<AbortController | null>(null);
+
   // Refs for auto-save debouncing
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const originalHtmlRef = useRef<string>('');
   const originalCssRef = useRef<string>('');
+
+  // Ref to track if auto-beautify from query param has been triggered
+  // Requirement 6.5: Auto-trigger beautification when beautify=true parameter is present
+  const autoBeautifyTriggeredRef = useRef<boolean>(false);
 
   /**
    * Fetch website data by ID
@@ -625,31 +663,313 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
   }, [website, isShowcased, isTogglingShowcase]);
 
   /**
-   * Handle beautify button click
+   * Handle beautify button click - opens the BeautifyOptionsDialog
    * Requirement 5.1: Display a Beautify_Button in the action toolbar
    * Requirement 5.3: Initiate a beautification request when clicked
-   *
-   * This handler triggers the beautification workflow for the current website.
-   * The full workflow implementation (BeautifyOptionsDialog, streaming, comparison)
-   * is handled in Task 16.2.
+   * Requirement 0.1.1: Display options dialog before starting beautification
    */
   const handleBeautifyClick = useCallback(() => {
     if (!website || isBeautifying) return;
-
-    // TODO: Task 16.2 will implement the full beautification flow:
-    // 1. Open BeautifyOptionsDialog
-    // 2. Handle beautification request with current HTML/CSS
-    // 3. Show BeautifyLoadingOverlay during process
-    // 4. Display PreviewComparison on completion
-    // 5. Show SaveOptionsDialog on accept
-    setIsBeautifying(true);
-
-    // Placeholder: Reset loading state after a brief delay
-    // This will be replaced with actual beautification logic in Task 16.2
-    setTimeout(() => {
-      setIsBeautifying(false);
-    }, 100);
+    setShowBeautifyOptions(true);
   }, [website, isBeautifying]);
+
+  /**
+   * Get Firebase ID token for API authentication
+   */
+  const getIdToken = useCallback(async (): Promise<string> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('User not authenticated');
+    }
+    return currentUser.getIdToken();
+  }, []);
+
+  /**
+   * Handle beautify options dialog confirmation
+   * Starts the beautification process with streaming
+   * Requirement 5.3: Handle beautification request with current HTML/CSS
+   * Requirement 5.5: Show BeautifyLoadingOverlay during process
+   */
+  const handleBeautifyConfirm = useCallback(async (options: BeautifyDialogResult) => {
+    if (!website) return;
+
+    // Close options dialog and start beautifying
+    setShowBeautifyOptions(false);
+    setIsBeautifying(true);
+    setBeautifyStage('analyzing');
+    setBeautifyStreamingContent('');
+    setBeautifyError(null);
+
+    // Create abort controller for cancellation
+    const abortController = new AbortController();
+    beautifyAbortControllerRef.current = abortController;
+
+    try {
+      // Get auth token
+      const token = await getIdToken();
+
+      // Prepare request body
+      const requestBody: Record<string, unknown> = {
+        websiteId: website.id,
+        html: editedHtml,
+        css: editedCss,
+      };
+
+      // Add reference image if provided
+      if (options.useReferenceImage && options.referenceImage) {
+        requestBody.referenceImage = options.referenceImage;
+        requestBody.referenceImageMimeType = options.referenceImageMimeType;
+      }
+
+      // Make streaming request to beautify API
+      const response = await fetch('/api/beautify/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestBody),
+        signal: abortController.signal,
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || 'Beautification failed');
+      }
+
+      // Process the SSE stream
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Failed to get stream reader');
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let result: { html: string; css: string } | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Parse SSE events from buffer
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+
+          if (line.startsWith('event: ')) {
+            const eventType = line.slice(7);
+            const dataLine = lines[i + 1];
+
+            if (dataLine?.startsWith('data: ')) {
+              try {
+                const data: BeautifyStreamEvent = JSON.parse(dataLine.slice(6));
+
+                switch (eventType) {
+                  case 'start':
+                    setBeautifyStage('analyzing');
+                    break;
+                  case 'mode':
+                    // Update stage based on mode
+                    if (data.mode === 'complete') {
+                      setBeautifyStage('completing');
+                    } else {
+                      setBeautifyStage('enhancing');
+                    }
+                    break;
+                  case 'text':
+                    if (data.content) {
+                      setBeautifyStreamingContent((prev) => prev + data.content);
+                      // Update stage based on content
+                      if (data.content.includes('```css')) {
+                        setBeautifyStage('finalizing');
+                      }
+                    }
+                    break;
+                  case 'done':
+                    if (data.result) {
+                      result = data.result;
+                    }
+                    break;
+                  case 'error':
+                    throw new Error(data.error || 'Beautification failed');
+                }
+              } catch (e) {
+                if (e instanceof SyntaxError) {
+                  // JSON parse error, skip this event
+                  continue;
+                }
+                throw e;
+              }
+              i++; // Skip the data line we just processed
+            }
+          }
+        }
+      }
+
+      if (!result) {
+        throw new Error('No result received from stream');
+      }
+
+      // Success - store beautified content and show comparison
+      setBeautifiedHtml(result.html);
+      setBeautifiedCss(result.css);
+      setIsBeautifying(false);
+      setShowPreviewComparison(true);
+    } catch (err) {
+      // Handle cancellation
+      if (err instanceof Error && err.name === 'AbortError') {
+        // User cancelled - reset state silently
+        setIsBeautifying(false);
+        setBeautifyStreamingContent('');
+        return;
+      }
+
+      // Show error to user
+      const beautifyErr = getBeautifyError(err instanceof Error ? err : String(err));
+      setBeautifyError(beautifyErr);
+      setIsBeautifying(false);
+    } finally {
+      beautifyAbortControllerRef.current = null;
+    }
+  }, [website, editedHtml, editedCss, getIdToken]);
+
+  /**
+   * Handle beautify cancellation
+   * Requirement 9.4: Provide cancel button to abort beautification
+   * Requirement 9.5: Abort ongoing API request within 5 seconds
+   */
+  const handleBeautifyCancel = useCallback(() => {
+    if (beautifyAbortControllerRef.current) {
+      beautifyAbortControllerRef.current.abort();
+      beautifyAbortControllerRef.current = null;
+    }
+    setIsBeautifying(false);
+    setBeautifyStreamingContent('');
+  }, []);
+
+  /**
+   * Handle preview comparison accept
+   * Requirement 7.5: Display "Accept Changes" button that applies beautified version
+   * Requirement 7.7: Update code editor with beautified HTML and CSS
+   */
+  const handlePreviewAccept = useCallback(() => {
+    setShowPreviewComparison(false);
+    setShowSaveOptions(true);
+  }, []);
+
+  /**
+   * Handle preview comparison reject
+   * Requirement 7.6: Display "Reject Changes" button that discards beautified version
+   * Requirement 7.9: Preserve original HTML/CSS on reject
+   */
+  const handlePreviewReject = useCallback(() => {
+    setShowPreviewComparison(false);
+    // Reset beautified content
+    setBeautifiedHtml('');
+    setBeautifiedCss('');
+  }, []);
+
+  /**
+   * Handle save dialog close (revert to original)
+   */
+  const handleSaveOptionsClose = useCallback(() => {
+    setShowSaveOptions(false);
+    // Reset beautified content
+    setBeautifiedHtml('');
+    setBeautifiedCss('');
+  }, []);
+
+  /**
+   * Handle beautify error retry
+   * Requirement 10.6: Provide "Try Again" button
+   */
+  const handleBeautifyRetry = useCallback(() => {
+    setBeautifyError(null);
+    setShowBeautifyOptions(true);
+  }, []);
+
+  /**
+   * Handle beautify error dismiss
+   * Requirement 10.7: Provide "Dismiss" button to return to normal preview mode
+   */
+  const handleBeautifyErrorDismiss = useCallback(() => {
+    setBeautifyError(null);
+  }, []);
+
+  /**
+   * Handle when original website is updated after "Replace Original"
+   * This updates the local editor state with the beautified content
+   */
+  const handleOriginalUpdated = useCallback((html: string, css: string) => {
+    setEditedHtml(html);
+    setEditedCss(css);
+    originalHtmlRef.current = html;
+    originalCssRef.current = css;
+    setHasUnsavedChanges(false);
+    setLastSaved(new Date());
+    // Reset beautified content
+    setBeautifiedHtml('');
+    setBeautifiedCss('');
+  }, []);
+
+  /**
+   * useBeautifySave hook - provides save handlers for beautified content
+   * Requirements 8.3, 8.4, 8.5, 8.6
+   */
+  const { handleReplaceOriginal, handleSaveAsNew } = useBeautifySave({
+    originalWebsite: website!,
+    beautifiedHtml,
+    beautifiedCss,
+    onSuccess: () => {
+      setShowSaveOptions(false);
+    },
+    onOriginalUpdated: handleOriginalUpdated,
+  });
+
+  /**
+   * Handle beautify=true query parameter
+   * Requirement 6.5: Auto-trigger beautification when beautify=true parameter is present
+   *
+   * When the preview page receives the beautify=true parameter (from WebsiteCard navigation),
+   * automatically initiate beautification after the website loads.
+   * Clear the query parameter from URL after triggering to prevent re-triggering on refresh.
+   */
+  useEffect(() => {
+    // Check if beautify=true parameter is present
+    const shouldBeautify = searchParams.get('beautify') === 'true';
+
+    // Only trigger if:
+    // 1. beautify=true is in the URL
+    // 2. Website has loaded (not loading anymore)
+    // 3. Website data exists
+    // 4. We haven't already triggered auto-beautify
+    // 5. Not currently beautifying
+    if (
+      shouldBeautify &&
+      !isLoading &&
+      website &&
+      !autoBeautifyTriggeredRef.current &&
+      !isBeautifying
+    ) {
+      // Mark as triggered to prevent re-triggering
+      autoBeautifyTriggeredRef.current = true;
+
+      // Clear the beautify parameter from URL to prevent re-triggering on refresh
+      // Use router.replace to avoid adding to browser history
+      router.replace(pathname, { scroll: false });
+
+      // Trigger beautification after a short delay to ensure UI is stable
+      // This gives the page time to fully render before opening the dialog
+      setTimeout(() => {
+        handleBeautifyClick();
+      }, 100);
+    }
+  }, [searchParams, pathname, router, isLoading, website, isBeautifying, handleBeautifyClick]);
 
   /**
    * Handle download format selection
@@ -999,6 +1319,66 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
         onDownload={handleDownload}
         websiteTitle={website.title}
       />
+
+      {/* Beautify Options Dialog */}
+      {/* Requirement 0.1.1: Display options dialog before starting beautification */}
+      <BeautifyOptionsDialog
+        isOpen={showBeautifyOptions}
+        onClose={() => setShowBeautifyOptions(false)}
+        onConfirm={handleBeautifyConfirm}
+      />
+
+      {/* Beautify Loading Overlay */}
+      {/* Requirement 5.5: Display loading overlay with status messages during beautification */}
+      {/* Requirement 5.6: Show the detected Beautification_Mode */}
+      <BeautifyLoadingOverlay
+        stage={beautifyStage}
+        isVisible={isBeautifying}
+        streamingContent={beautifyStreamingContent}
+        isPreviewExpanded={isBeautifyPreviewExpanded}
+        onTogglePreview={() => setIsBeautifyPreviewExpanded(!isBeautifyPreviewExpanded)}
+        onCancel={handleBeautifyCancel}
+      />
+
+      {/* Preview Comparison */}
+      {/* Requirement 5.7: Display PreviewComparison on beautification completion */}
+      {showPreviewComparison && (
+        <div
+          className="fixed inset-0 z-50 bg-background"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Compare original and beautified versions"
+        >
+          <PreviewComparison
+            originalHtml={editedHtml}
+            originalCss={editedCss}
+            beautifiedHtml={beautifiedHtml}
+            beautifiedCss={beautifiedCss}
+            onAccept={handlePreviewAccept}
+            onReject={handlePreviewReject}
+          />
+        </div>
+      )}
+
+      {/* Save Options Dialog */}
+      {/* Requirement 5.8: Show SaveOptionsDialog on accept */}
+      <SaveOptionsDialog
+        isOpen={showSaveOptions}
+        originalTitle={website.title}
+        onClose={handleSaveOptionsClose}
+        onReplaceOriginal={handleReplaceOriginal}
+        onSaveAsNew={handleSaveAsNew}
+      />
+
+      {/* Beautify Error Display */}
+      {/* Requirements 10.1-10.7: Display error messages with recovery options */}
+      {beautifyError && (
+        <BeautifyErrorDisplay
+          error={beautifyError}
+          onRetry={handleBeautifyRetry}
+          onDismiss={handleBeautifyErrorDismiss}
+        />
+      )}
     </div>
   );
 }
@@ -1026,7 +1406,11 @@ export default function WebsitePage({ params }: WebsitePageProps) {
 
         {/* Main content */}
         <main className="flex-1 relative z-10">
-          <WebsitePageContent websiteId={websiteId} />
+          {/* Suspense boundary required for useSearchParams hook */}
+          {/* Requirement 6.5: Handle beautify=true query parameter */}
+          <Suspense fallback={<LoadingSpinner />}>
+            <WebsitePageContent websiteId={websiteId} />
+          </Suspense>
         </main>
       </div>
     </ProtectedRoute>

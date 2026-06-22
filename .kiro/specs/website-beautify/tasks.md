@@ -313,7 +313,7 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Add BeautifyButton alongside Preview and Download buttons
     - _Requirements: 5.1_
 
-  - [~] 16.2 Implement beautification flow on preview page
+  - [x] 16.2 Implement beautification flow on preview page
     - Connect BeautifyButton click to BeautifyOptionsDialog
     - Handle beautification request with current HTML/CSS
     - Show BeautifyLoadingOverlay during process
@@ -321,16 +321,16 @@ The implementation follows the existing Next.js App Router architecture with Typ
     - Show SaveOptionsDialog on accept
     - _Requirements: 5.3, 5.5, 5.7, 5.8_
 
-  - [~] 16.3 Handle `beautify=true` query parameter
+  - [x] 16.3 Handle `beautify=true` query parameter
     - Auto-trigger beautification when parameter present
     - _Requirements: 6.5_
 
-- [ ] 17. Integrate BeautifyButton on Dashboard WebsiteCard
+- [x] 17. Integrate BeautifyButton on Dashboard WebsiteCard
   - [x] 17.1 Add BeautifyButton to WebsiteCard hover state
     - Show BeautifyButton alongside edit and delete buttons on hover
     - _Requirements: 6.1, 6.2_
 
-  - [~] 17.2 Navigate to preview with beautify parameter
+  - [x] 17.2 Navigate to preview with beautify parameter
     - On click, navigate to preview page with `beautify=true` query parameter
     - _Requirements: 6.3, 6.4_
 
