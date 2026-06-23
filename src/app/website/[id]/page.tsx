@@ -802,7 +802,7 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col">
       {/* Page header with website title, save status, and actions */}
-      <div className="flex items-center justify-between border-b border-border bg-background px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border bg-background px-4 py-3 shrink-0 relative z-20 min-h-[60px]">
         <div className="flex items-center gap-3">
           <button
             type="button"
