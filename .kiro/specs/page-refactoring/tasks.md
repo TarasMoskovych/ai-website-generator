@@ -229,7 +229,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
 - [ ] 11. Checkpoint - Verify all hooks complete
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 12. Refactor Website page
+- [x] 12. Refactor Website page
   - [x] 12.1 Refactor Website page to use extracted components and hooks
     - Update `src/app/website/[id]/page.tsx`
     - Import LoadingSpinner from src/components/common
@@ -242,7 +242,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Target: under 400 lines
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
 
-  - [ ] 12.2 Verify Website page line count and functionality
+  - [x] 12.2 Verify Website page line count and functionality
     - Verify file is under 400 lines
     - Verify iframe preview with viewport mode switching works
     - Verify HTML/CSS editing with live preview works
@@ -253,7 +253,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Verify unsaved changes warning works
     - _Requirements: 7.6, 7.7_
 
-- [ ] 13. Refactor Generate page
+- [x] 13. Refactor Generate page
   - [x] 13.1 Refactor Generate page to use useSSEStream hook
     - Update `src/app/generate/page.tsx`
     - Remove SSE-specific code from generateFromText function
@@ -264,7 +264,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Target: under 400 lines
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 12.5_
 
-  - [ ] 13.2 Verify Generate page line count and functionality
+  - [x] 13.2 Verify Generate page line count and functionality
     - Verify file is under 400 lines
     - Verify mode switching between text and screenshot works
     - Verify input validation before generation
@@ -276,7 +276,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
 - [ ] 14. Checkpoint - Verify core page refactoring
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 15. Refactor Login page
+- [x] 15. Refactor Login page
   - [x] 15.1 Refactor Login page to use extracted components
     - Update `src/app/page.tsx`
     - Import LoadingSpinner from src/components/common
@@ -286,7 +286,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Target: under 300 lines
     - _Requirements: 9.5, 9.6, 9.7, 9.8_
 
-  - [ ] 15.2 Verify Login page line count and functionality
+  - [x] 15.2 Verify Login page line count and functionality
     - Verify file is under 300 lines
     - Verify Google OAuth sign-in works
     - Verify error display with dismiss works
@@ -294,7 +294,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Verify Community Showcase preview displays
     - _Requirements: 9.8, 9.9_
 
-- [ ] 16. Refactor Dashboard page
+- [x] 16. Refactor Dashboard page
   - [x] 16.1 Refactor Dashboard page to use extracted components
     - Update `src/app/dashboard/page.tsx`
     - Import LoadingSpinner from src/components/common
@@ -303,7 +303,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Target: under 350 lines
     - _Requirements: 10.1, 10.4, 10.5_
 
-  - [ ] 16.2 Verify Dashboard page line count and functionality
+  - [x] 16.2 Verify Dashboard page line count and functionality
     - Verify file is under 350 lines
     - Verify website grid with WebsiteCard works
     - Verify pagination works
@@ -312,7 +312,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Verify error state with retry works
     - _Requirements: 10.5, 10.6_
 
-- [ ] 17. Refactor Showcase page
+- [x] 17. Refactor Showcase page
   - [x] 17.1 Refactor Showcase page to use extracted components
     - Update `src/app/showcase/page.tsx`
     - Import ShowcaseWebsiteCard from src/components
@@ -321,7 +321,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Target: under 200 lines
     - _Requirements: 11.5, 11.6, 11.7_
 
-  - [ ] 17.2 Verify Showcase page line count and functionality
+  - [x] 17.2 Verify Showcase page line count and functionality
     - Verify file is under 200 lines
     - Verify website grid works
     - Verify pagination works
