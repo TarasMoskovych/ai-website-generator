@@ -27,6 +27,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, use, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ProtectedRoute, useAuth } from '@/components/auth';
 import { AppHeader, AppFooter } from '@/components/layout';
@@ -1030,10 +1031,10 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
         </div>
       </div>
 
-      {/* Fullscreen preview modal */}
-      {isFullscreen && (
+      {/* Fullscreen preview modal - rendered via portal to cover entire page */}
+      {isFullscreen && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[100] bg-background"
+          className="fixed inset-0 z-[9999] bg-background"
           role="dialog"
           aria-modal="true"
           aria-label="Fullscreen preview"
@@ -1097,7 +1098,8 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
             sandbox="allow-same-origin"
             title="Fullscreen website preview"
           />
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Download dialog */}
