@@ -32,12 +32,12 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute, useAuth } from '@/components/auth';
-import { AppHeader, AppFooter } from '@/components/layout';
+import { AppHeader, AppFooter, ShowcaseLink } from '@/components/layout';
 import { WebsiteCard } from '@/components/WebsiteCard';
 import { Pagination } from '@/components/Pagination';
-import { ErrorMessage } from '@/components/common/ErrorMessage';
+import { ErrorMessage, LoadingSpinner } from '@/components/common';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
-import { GlobeIcon, PlusIcon } from '@/components/icons';
+import { PlusIcon } from '@/components/icons';
 import { useWebsites } from '@/hooks/useWebsites';
 import websiteRepository from '@/services/websiteRepository';
 import type { GeneratedWebsite } from '@/types/website';
@@ -46,59 +46,6 @@ import type { GeneratedWebsite } from '@/types/website';
  * Page size constant (Requirement 6.5: 12 items per page)
  */
 const PAGE_SIZE = 12;
-
-/**
- * ShowcaseLink Component
- * Navigation link to the Community Showcase page
- *
- * Requirements:
- * - 1.1: Display visible link in dashboard header
- * - 1.2: Text clearly identifies destination
- * - 1.3: Include visual icon (globe)
- * - 1.5: Secondary/link styling
- * - 2.1: Navigate to /showcase
- * - 2.2: Open in same tab
- * - 3.1: Keyboard accessible
- * - 3.2: Descriptive accessible name
- * - 3.3: Visible focus indicator
- * - 4.1-4.3: Responsive text/icon display
- * - 4.4: Minimum touch target size (44x44px for WCAG compliance)
- */
-function ShowcaseLink() {
-  return (
-    <a
-      href="/showcase"
-      className="
-        inline-flex items-center justify-center gap-2
-        rounded-md px-3 py-2
-        min-h-[44px] min-w-[44px]
-        text-sm font-medium
-        text-muted-foreground
-        hover:bg-accent hover:text-accent-foreground
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-        transition-colors
-      "
-      aria-label="Navigate to Community Showcase"
-    >
-      <GlobeIcon className="h-4 w-4" />
-      <span className="hidden sm:inline">Community Showcase</span>
-    </a>
-  );
-}
-
-/**
- * Loading spinner component for the dashboard
- */
-function LoadingSpinner() {
-  return (
-    <div className="flex min-h-[400px] items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <p className="text-muted-foreground text-sm">Loading your websites...</p>
-      </div>
-    </div>
-  );
-}
 
 /**
  * Dashboard page content component
@@ -238,7 +185,7 @@ function DashboardContent() {
 
   // Show loading state
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner message="Loading your websites..." />;
   }
 
   // Show error state
@@ -260,19 +207,12 @@ function DashboardContent() {
     );
   }
 
-  // Show empty state
-  // Requirement 6.6: Display empty state message with CTA when no websites exist
+  // Show empty state (Requirement 6.6: Display empty state message with CTA when no websites exist)
   if (websites.length === 0) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-6 px-4">
         {/* Empty state illustration */}
-        <div
-          className="
-            flex h-24 w-24 items-center justify-center
-            rounded-full bg-muted
-          "
-          aria-hidden="true"
-        >
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted" aria-hidden="true">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -288,29 +228,17 @@ function DashboardContent() {
             <path d="M9 21V9" />
           </svg>
         </div>
-
         {/* Empty state message */}
         <div className="text-center max-w-md">
-          <h2 className="text-xl font-semibold text-foreground">
-            No websites yet
-          </h2>
+          <h2 className="text-xl font-semibold text-foreground">No websites yet</h2>
           <p className="text-muted-foreground text-sm mt-2">
             You haven&apos;t created any websites yet. Get started by generating your first website with AI - just describe what you want or upload a screenshot!
           </p>
         </div>
-
-        {/* Call-to-action button (Requirement 6.6: visible CTA to create new website) */}
+        {/* Call-to-action button */}
         <a
           href="/generate"
-          className="
-            inline-flex items-center justify-center gap-2
-            rounded-md bg-primary px-6 py-3
-            text-base font-medium text-primary-foreground
-            hover:bg-primary/90
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-            focus-visible:ring-offset-2 focus-visible:ring-offset-background
-            transition-colors
-          "
+          className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-base font-medium text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors"
         >
           <PlusIcon className="h-5 w-5" />
           Create Your First Website
@@ -319,21 +247,11 @@ function DashboardContent() {
     );
   }
 
-  // Render website grid with pagination
-  // Requirement 6.2: Display websites with thumbnail, title, date, and input type
-  // Requirement 6.5: Display pagination controls
+  // Render website grid with pagination (Requirements 6.2, 6.5)
   return (
     <div className="flex flex-col gap-8">
       {/* Website grid */}
-      <div
-        className="
-          grid gap-6
-          grid-cols-1
-          sm:grid-cols-2
-          lg:grid-cols-3
-          xl:grid-cols-4
-        "
-      >
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {websites.map((website) => (
           <WebsiteCard
             key={website.id}
@@ -345,15 +263,13 @@ function DashboardContent() {
           />
         ))}
       </div>
-
-      {/* Pagination controls (Requirement 6.5) */}
+      {/* Pagination controls */}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-
-      {/* Delete confirmation dialog (Requirements 7.1, 7.3) */}
+      {/* Delete confirmation dialog */}
       <DeleteConfirmDialog
         isOpen={deleteDialogOpen}
         websiteTitle={websiteToDelete?.title ?? ''}
@@ -367,8 +283,7 @@ function DashboardContent() {
 }
 
 /**
- * Dashboard page component
- * Protected route that displays user's generated websites
+ * Dashboard page component - Protected route that displays user's generated websites
  */
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -381,48 +296,29 @@ export default function DashboardPage() {
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
         </div>
-
-        {/* Header with user profile */}
         <AppHeader user={user} />
-
-        {/* Main content */}
         <main className="flex-1 relative">
           <div className="container mx-auto px-4 py-8">
-            {/* Page header - Requirement 1.4: Position between title and New Website button */}
+            {/* Page header */}
             <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-foreground">My Websites</h1>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Manage and view your generated websites
-                </p>
+                <p className="text-muted-foreground text-sm mt-1">Manage and view your generated websites</p>
               </div>
-              {/* Action buttons section */}
               <div className="flex items-center gap-2">
-                {/* Showcase link - Requirement 1.4: Between title and New Website */}
                 <ShowcaseLink />
                 <a
                   href="/generate"
-                  className="
-                    inline-flex items-center justify-center gap-2
-                    rounded-md bg-primary px-4 py-2
-                    text-sm font-medium text-primary-foreground
-                    hover:bg-primary/90
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-                    transition-colors
-                  "
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
                 >
                   <PlusIcon className="h-4 w-4" />
                   New Website
                 </a>
               </div>
             </div>
-
-            {/* Website grid */}
             <DashboardContent />
           </div>
         </main>
-
-        {/* Footer - Requirements 2.1, 6.3, 6.4: Visible on dashboard, positioned after main content, NOT fixed/sticky */}
         <AppFooter />
       </div>
     </ProtectedRoute>

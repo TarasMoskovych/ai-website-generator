@@ -230,7 +230,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 12. Refactor Website page
-  - [ ] 12.1 Refactor Website page to use extracted components and hooks
+  - [x] 12.1 Refactor Website page to use extracted components and hooks
     - Update `src/app/website/[id]/page.tsx`
     - Import LoadingSpinner from src/components/common
     - Import WebsiteNotFound from src/components/common
@@ -254,7 +254,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - _Requirements: 7.6, 7.7_
 
 - [ ] 13. Refactor Generate page
-  - [ ] 13.1 Refactor Generate page to use useSSEStream hook
+  - [x] 13.1 Refactor Generate page to use useSSEStream hook
     - Update `src/app/generate/page.tsx`
     - Remove SSE-specific code from generateFromText function
     - Remove SSE-specific code from generateFromScreenshot function
@@ -277,7 +277,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 15. Refactor Login page
-  - [ ] 15.1 Refactor Login page to use extracted components
+  - [x] 15.1 Refactor Login page to use extracted components
     - Update `src/app/page.tsx`
     - Import LoadingSpinner from src/components/common
     - Import GoogleSignInButton from src/components/auth
@@ -295,7 +295,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - _Requirements: 9.8, 9.9_
 
 - [ ] 16. Refactor Dashboard page
-  - [ ] 16.1 Refactor Dashboard page to use extracted components
+  - [x] 16.1 Refactor Dashboard page to use extracted components
     - Update `src/app/dashboard/page.tsx`
     - Import LoadingSpinner from src/components/common
     - Import ShowcaseLink from src/components/layout
@@ -313,7 +313,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - _Requirements: 10.5, 10.6_
 
 - [ ] 17. Refactor Showcase page
-  - [ ] 17.1 Refactor Showcase page to use extracted components
+  - [x] 17.1 Refactor Showcase page to use extracted components
     - Update `src/app/showcase/page.tsx`
     - Import ShowcaseWebsiteCard from src/components
     - Import WebsiteCardSkeleton from src/components/common
