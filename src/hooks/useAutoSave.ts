@@ -127,11 +127,14 @@ export function useAutoSave<T>(config: UseAutoSaveConfig<T>): UseAutoSaveReturn 
     onSaveRef.current = onSave;
   }, [onSave]);
 
+  // Sync original values only when they actually change (using deep comparison)
+  const originalValuesJson = JSON.stringify(originalValues);
   useEffect(() => {
     originalValuesRef.current = originalValues;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Syncing with prop changes
     setTrackedOriginalValues(originalValues);
-  }, [originalValues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Using JSON string for deep comparison
+  }, [originalValuesJson]);
 
   // Compute hasUnsavedChanges using deep equality comparison (using state instead of ref)
   const hasUnsavedChanges = !deepEqual(currentValues, trackedOriginalValues);
