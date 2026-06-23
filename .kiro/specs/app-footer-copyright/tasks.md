@@ -48,13 +48,13 @@ The implementation is organized into:
     - Use `flex` layout with responsive gap and direction
     - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 2. Integrate with layout system
-  - [~] 2.1 Export AppFooter from layout barrel
+- [x] 2. Integrate with layout system
+  - [x] 2.1 Export AppFooter from layout barrel
     - Add `export { AppFooter } from './AppFooter';` to `src/components/layout/index.ts`
     - Add `export type { AppFooterProps } from './AppFooter';`
     - _Requirements: 6.2_
 
-  - [~] 2.2 Add AppFooter to dashboard layout
+  - [x] 2.2 Add AppFooter to dashboard layout
     - Import AppFooter in the dashboard page or layout
     - Position footer after main content area
     - Ensure footer is NOT fixed/sticky (flows with content)

@@ -11,3 +11,6 @@ export type { ThemeToggleProps } from './ThemeToggle';
 
 export { AppHeader } from './AppHeader';
 export type { AppHeaderProps } from './AppHeader';
+
+export { AppFooter } from './AppFooter';
+export type { AppFooterProps } from './AppFooter';

@@ -32,7 +32,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute, useAuth } from '@/components/auth';
-import { AppHeader } from '@/components/layout';
+import { AppHeader, AppFooter } from '@/components/layout';
 import { WebsiteCard } from '@/components/WebsiteCard';
 import { Pagination } from '@/components/Pagination';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
@@ -421,6 +421,9 @@ export default function DashboardPage() {
             <DashboardContent />
           </div>
         </main>
+
+        {/* Footer - Requirements 2.1, 6.3, 6.4: Visible on dashboard, positioned after main content, NOT fixed/sticky */}
+        <AppFooter />
       </div>
     </ProtectedRoute>
   );
