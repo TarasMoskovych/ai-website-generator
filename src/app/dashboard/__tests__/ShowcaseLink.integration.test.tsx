@@ -39,14 +39,19 @@ vi.mock('@/components/auth', () => ({
 }));
 
 // Mock the layout module
-vi.mock('@/components/layout', () => ({
-  AppHeader: ({ user }: { user: AuthenticatedUser | null }) => (
-    <header data-testid="app-header">
-      {user && <span data-testid="logged-in-user">{user.displayName}</span>}
-    </header>
-  ),
-  AppFooter: () => <footer data-testid="mock-footer">Mock Footer</footer>,
-}));
+vi.mock('@/components/layout', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/layout')>();
+  return {
+    ...actual,
+    AppHeader: ({ user }: { user: AuthenticatedUser | null }) => (
+      <header data-testid="app-header">
+        {user && <span data-testid="logged-in-user">{user.displayName}</span>}
+      </header>
+    ),
+    AppFooter: () => <footer data-testid="mock-footer">Mock Footer</footer>,
+    // ShowcaseLink is imported from actual module
+  };
+});
 
 // Mock the WebsiteCard component
 vi.mock('@/components/WebsiteCard', () => ({

@@ -39,17 +39,22 @@ vi.mock('next/image', () => ({
 }));
 
 // Mock the auth context
-vi.mock('@/components/auth', () => ({
-  useAuth: () => ({
-    user: null,
-    loading: false,
-    isLoading: false,
-    error: null,
-    signInWithGoogle: vi.fn(),
-    clearError: vi.fn(),
-  }),
-  getAndClearRedirectUrl: () => null,
-}));
+vi.mock('@/components/auth', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/auth')>();
+  return {
+    ...actual,
+    useAuth: () => ({
+      user: null,
+      loading: false,
+      isLoading: false,
+      error: null,
+      signInWithGoogle: vi.fn(),
+      clearError: vi.fn(),
+    }),
+    getAndClearRedirectUrl: () => null,
+    // GoogleSignInButton is imported from actual module
+  };
+});
 
 // Mock the websiteRepository
 const mockGetShowcasedWebsites = vi.fn();

@@ -55,17 +55,22 @@ vi.mock('next/navigation', () => ({
 }));
 
 // Mock the layout components that use ThemeProvider
-vi.mock('@/components/layout', () => ({
-  AppHeader: ({ user }: { user: unknown }) => (
-    <header data-testid="mock-header">
-      <span>Mock Header</span>
-      {user && <span data-testid="user-info">User logged in</span>}
-    </header>
-  ),
-  ThemeToggle: () => <button data-testid="mock-theme-toggle">Theme</button>,
-  ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  AppFooter: () => <footer data-testid="mock-footer">Mock Footer</footer>,
-}));
+vi.mock('@/components/layout', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/layout')>();
+  return {
+    ...actual,
+    AppHeader: ({ user }: { user: unknown }) => (
+      <header data-testid="mock-header">
+        <span>Mock Header</span>
+        {user && <span data-testid="user-info">User logged in</span>}
+      </header>
+    ),
+    ThemeToggle: () => <button data-testid="mock-theme-toggle">Theme</button>,
+    ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+    AppFooter: () => <footer data-testid="mock-footer">Mock Footer</footer>,
+    // ShowcaseLink is imported from actual module
+  };
+});
 
 // Import DashboardPage after mocks are set up
 import DashboardPage from './page';
