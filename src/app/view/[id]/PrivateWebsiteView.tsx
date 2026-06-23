@@ -239,7 +239,6 @@ export function PrivateWebsiteView({
           inset: 0,
           zIndex: 9999,
           overflow: 'auto',
-          backgroundColor: '#ffffff',
         }}
       >
         {/* Render the generated HTML content */}

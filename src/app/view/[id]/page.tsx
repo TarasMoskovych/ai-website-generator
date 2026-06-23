@@ -109,7 +109,6 @@ function PublicWebsiteContent({ html, css }: { html: string; css: string }) {
           inset: 0,
           zIndex: 9999,
           overflow: 'auto',
-          backgroundColor: '#ffffff',
         }}
       >
         {/* Render the generated HTML content */}
