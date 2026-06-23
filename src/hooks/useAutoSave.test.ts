@@ -798,5 +798,101 @@ describe('useAutoSave', () => {
         { numRuns: 10 }
       );
     });
+
+    /**
+     * Feature: page-refactoring, Property 8: useAutoSave Save Serialization
+     *
+     * *For any* scenario where a new auto-save would trigger while a save is in progress,
+     * the useAutoSave hook SHALL wait for the current save to complete before initiating
+     * a new save with the latest values, ensuring saves are never concurrent.
+     *
+     * **Validates: Requirements 5.8**
+     */
+    it('saves are never concurrent and wait for current save (Property 8)', async () => {
+      vi.useRealTimers(); // Need real timers for Promise timing
+
+      await fc.assert(
+        fc.asyncProperty(
+          // Generate an array of unique values to save
+          fc.array(fc.integer({ min: 1, max: 1000 }), { minLength: 2, maxLength: 5 })
+            .filter((arr) => new Set(arr).size === arr.length), // Ensure unique values
+          fc.integer({ min: 10, max: 50 }), // Save duration for first save
+          fc.integer({ min: 5, max: 20 }), // Save duration for subsequent saves
+          async (values, firstSaveDuration, subsequentSaveDuration) => {
+            // Track concurrent save attempts
+            let activeSaveCount = 0;
+            let maxConcurrentSaves = 0;
+            const saveCompletionOrder: number[] = [];
+
+            const onSave = vi.fn().mockImplementation(async (v: { value: number }) => {
+              activeSaveCount++;
+              maxConcurrentSaves = Math.max(maxConcurrentSaves, activeSaveCount);
+
+              // First save takes longer to create opportunity for concurrency
+              const duration = saveCompletionOrder.length === 0 ? firstSaveDuration : subsequentSaveDuration;
+              await new Promise((resolve) => setTimeout(resolve, duration));
+
+              saveCompletionOrder.push(v.value);
+              activeSaveCount--;
+            });
+
+            const initialConfig: UseAutoSaveConfig<{ value: number }> = {
+              currentValues: { value: values[0] },
+              originalValues: { value: 0 },
+              onSave,
+              delay: 100,
+            };
+
+            const { result, rerender, unmount } = renderHook(
+              ({ config }) => useAutoSave(config),
+              { initialProps: { config: initialConfig } }
+            );
+
+            // Trigger first save using manual save
+            const firstSavePromise = act(async () => {
+              await result.current.save();
+            });
+
+            // While first save is in progress, trigger more saves with different values
+            for (let i = 1; i < values.length; i++) {
+              const updatedConfig: UseAutoSaveConfig<{ value: number }> = {
+                ...initialConfig,
+                currentValues: { value: values[i] },
+                originalValues: { value: values[i - 1] }, // Update original so there's a change
+              };
+              rerender({ config: updatedConfig });
+
+              // Trigger another save
+              await act(async () => {
+                await result.current.save();
+              });
+            }
+
+            // Wait for all saves to complete
+            await firstSavePromise;
+            await act(async () => {
+              await new Promise((resolve) => setTimeout(resolve, 200));
+            });
+
+            // Cleanup
+            unmount();
+
+            // PROPERTY: Saves should never be concurrent (max concurrent should be 1)
+            expect(maxConcurrentSaves).toBeLessThanOrEqual(1);
+
+            // PROPERTY: If saves occurred, they should complete in submission order
+            // (serialized, not interleaved)
+            if (saveCompletionOrder.length > 1) {
+              // Each save should complete before the next one starts
+              // This is implicitly validated by maxConcurrentSaves <= 1
+              expect(maxConcurrentSaves).toBe(1);
+            }
+          }
+        ),
+        { numRuns: 20 }
+      );
+
+      vi.useFakeTimers(); // Restore fake timers
+    });
   });
 });

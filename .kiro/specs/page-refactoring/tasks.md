@@ -148,7 +148,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Maintain existing behavior coverage
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
 
-- [ ] 8. Create useAutoSave hook
+- [x] 8. Create useAutoSave hook
   - [x] 8.1 Create useAutoSave hook implementation
     - Create `src/hooks/useAutoSave.ts`
     - Accept generic type parameter for values
@@ -161,7 +161,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Clean up timeout on unmount
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9_
 
-  - [ ] 8.2 Write property test for useAutoSave debounced save behavior
+  - [x] 8.2 Write property test for useAutoSave debounced save behavior
     - **Property 5: useAutoSave Debounced Save Behavior**
     - Create `src/hooks/useAutoSave.test.ts`
     - Test save invoked once after delay from last change
@@ -169,21 +169,21 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Test no save when values return to original before delay
     - **Validates: Requirements 5.4, 5.7**
 
-  - [ ] 8.3 Write property test for useAutoSave success state
+  - [x] 8.3 Write property test for useAutoSave success state
     - **Property 6: useAutoSave Success State**
     - Test lastSaved updated on successful save
     - Test hasUnsavedChanges set to false
     - Test saveError cleared
     - **Validates: Requirements 5.5**
 
-  - [ ] 8.4 Write property test for useAutoSave error state
+  - [x] 8.4 Write property test for useAutoSave error state
     - **Property 7: useAutoSave Error State**
     - Test saveError set on failed save
     - Test hasUnsavedChanges remains true
     - Test lastSaved not updated
     - **Validates: Requirements 5.6**
 
-  - [ ] 8.5 Write property test for useAutoSave save serialization
+  - [x] 8.5 Write property test for useAutoSave save serialization
     - **Property 8: useAutoSave Save Serialization**
     - Test saves are never concurrent
     - Test waits for current save before new save
@@ -192,8 +192,8 @@ The implementation follows a layered approach: utilities â†’ shared components â
 - [ ] 9. Checkpoint - Verify hooks implementation
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Create useBeautifyWorkflow hook
-  - [ ] 10.1 Create useBeautifyWorkflow hook implementation
+- [x] 10. Create useBeautifyWorkflow hook
+  - [x] 10.1 Create useBeautifyWorkflow hook implementation
     - Create `src/hooks/useBeautifyWorkflow.ts`
     - Accept config: websiteId, currentHtml, currentCss, originalPrompt
     - Manage states: isBeautifying, beautifyStage, streamingContent, beautifiedHtml, beautifiedCss, beautifyError
@@ -204,7 +204,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Expose dialog handlers: handleConfirm, handleAccept, handleReject, handleRetry, handleDismiss
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11, 6.12, 6.13, 6.14, 6.15_
 
-  - [ ] 10.2 Write property test for useBeautifyWorkflow cancel behavior
+  - [x] 10.2 Write property test for useBeautifyWorkflow cancel behavior
     - **Property 9: useBeautifyWorkflow Cancel Behavior**
     - Create `src/hooks/useBeautifyWorkflow.test.ts`
     - Test cancelBeautify aborts request
@@ -212,7 +212,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Test beautifyError not set on cancel
     - **Validates: Requirements 6.6**
 
-  - [ ] 10.3 Write property test for useBeautifyWorkflow state machine
+  - [x] 10.3 Write property test for useBeautifyWorkflow state machine
     - **Property 10: useBeautifyWorkflow State Machine**
     - Test stage transitions: analyzing â†’ completing/enhancing â†’ finalizing
     - Test beautifiedHtml/beautifiedCss populated on success
@@ -220,7 +220,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Test beautifyError set on failure
     - **Validates: Requirements 6.13, 6.14, 6.15**
 
-  - [ ] 10.4 Write unit tests for useBeautifyWorkflow
+  - [x] 10.4 Write unit tests for useBeautifyWorkflow
     - Test initial state values
     - Test dialog state management
     - Test all handler functions
