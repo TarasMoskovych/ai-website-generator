@@ -60,7 +60,7 @@ The implementation is organized into:
     - Ensure footer is NOT fixed/sticky (flows with content)
     - _Requirements: 2.1, 6.3, 6.4_
 
-- [~] 3. Checkpoint - Verify component renders correctly
+- [x] 3. Checkpoint - Verify component renders correctly
   - Ensure the build passes with no TypeScript errors
   - Verify footer appears on dashboard page
   - Verify footer does NOT appear on /view/[id] routes (ViewLayout excludes it by design)
