@@ -64,7 +64,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Update `src/components/common/index.ts` with LoadingSpinner, WebsiteNotFound, WebsiteCardSkeleton exports
     - _Requirements: 1.6, 2.6_
 
-- [-] 3. Checkpoint - Verify shared components
+- [x] 3. Checkpoint - Verify shared components
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 4. Create auth and layout components
