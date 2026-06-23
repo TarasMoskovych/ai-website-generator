@@ -1033,33 +1033,49 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
       {/* Fullscreen preview modal */}
       {isFullscreen && (
         <div
-          className="fixed inset-0 z-50 bg-background"
+          className="fixed inset-0 z-[100] bg-background"
           role="dialog"
           aria-modal="true"
           aria-label="Fullscreen preview"
         >
           {/* Fullscreen header */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-background/90 backdrop-blur-sm border-b border-border">
+          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-background border-b border-border">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-semibold text-foreground">
-                {website.title}
-              </h2>
-              <span className="text-sm text-muted-foreground">
-                Preview
-              </span>
+              <button
+                type="button"
+                onClick={() => setIsFullscreen(false)}
+                className="
+                  inline-flex items-center justify-center
+                  rounded-md p-2
+                  text-muted-foreground
+                  hover:bg-accent hover:text-accent-foreground
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+                  transition-colors
+                "
+                aria-label="Exit fullscreen preview"
+              >
+                <ArrowLeftIcon className="h-5 w-5" />
+              </button>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  {website.title}
+                </h2>
+                <span className="text-xs text-muted-foreground">
+                  Fullscreen Preview
+                </span>
+              </div>
             </div>
             <button
               type="button"
               onClick={() => setIsFullscreen(false)}
               className="
                 inline-flex items-center justify-center gap-2
-                px-3 py-2 rounded-md
+                px-4 py-2 rounded-md
                 text-sm font-medium
-                bg-muted hover:bg-muted/80
-                text-foreground
+                bg-primary text-primary-foreground
+                hover:bg-primary/90
                 transition-colors
               "
-              aria-label="Exit fullscreen"
             >
               <MinimizeIcon className="h-4 w-4" />
               Exit Fullscreen
