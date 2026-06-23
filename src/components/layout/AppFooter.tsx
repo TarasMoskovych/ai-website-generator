@@ -65,12 +65,54 @@ function LinkedInIcon({ className }: { className?: string }) {
 }
 
 /**
+ * Social link configuration
+ */
+interface SocialLink {
+  /** Display name for the platform */
+  name: string;
+  /** URL to the profile/repository */
+  href: string;
+  /** Accessible label describing the link */
+  ariaLabel: string;
+  /** Call-to-action text */
+  ctaText: string;
+  /** Icon component */
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+/**
+ * Configured social links for the footer
+ */
+const socialLinks: SocialLink[] = [
+  {
+    name: 'GitHub',
+    href: 'https://github.com/TarasMoskovych/ai-webstite-generator',
+    ariaLabel: 'Visit the AI Website Generator GitHub repository (opens in new tab)',
+    ctaText: 'Star on GitHub',
+    icon: GitHubIcon,
+  },
+  {
+    name: 'LinkedIn',
+    href: 'https://www.linkedin.com/in/taras-moskovych/',
+    ariaLabel: "Visit Taras Moskovych's LinkedIn profile (opens in new tab)",
+    ctaText: 'Connect on LinkedIn',
+    icon: LinkedInIcon,
+  },
+];
+
+/**
  * AppFooter component
  * Main application footer with copyright notice, social links, and call-to-action text
  *
  * Requirements:
  * - 1.1: Display copyright notice with current year and developer name
+ * - 1.2-1.3: Display GitHub and LinkedIn links opening in new tabs
+ * - 1.4-1.5: Display call-to-action text for engagement
+ * - 4.1-4.4: Include proper security and accessibility attributes on links
  * - 4.5: Use semantic HTML elements with appropriate ARIA roles for accessibility
+ * - 5.1: Fully visible and readable on mobile (320px+)
+ * - 5.2: Adjust layout appropriately for different screen sizes
+ * - 5.3: Touch-friendly link targets (min 44x44px)
  * - 6.1: Created in src/components/layout directory following existing component patterns
  */
 export function AppFooter({ className }: AppFooterProps) {
@@ -85,11 +127,63 @@ export function AppFooter({ className }: AppFooterProps) {
       `}
       role="contentinfo"
     >
+      {/*
+        Responsive container layout:
+        - Mobile (320px+): Vertical stack with centered content
+        - Desktop (sm+): Horizontal layout with space-between
+        Requirements: 5.1, 5.2
+      */}
       <div className="container mx-auto px-4 py-6">
-        {/* Copyright and social links will be implemented in subsequent tasks */}
-        <p className="text-muted-foreground">
-          © {currentYear} Taras Moskovych
-        </p>
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between sm:gap-6">
+          {/* Copyright section - centered on mobile, left-aligned on desktop */}
+          <p className="text-muted-foreground text-sm text-center sm:text-left">
+            © {currentYear} Taras Moskovych
+          </p>
+
+          {/*
+            Social links navigation:
+            - Mobile: Vertical stack for easier touch targets
+            - Desktop (sm+): Horizontal row
+            Requirements: 5.2, 5.3
+          */}
+          <nav aria-label="Social links">
+            <ul className="flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
+              {socialLinks.map((link) => {
+                const IconComponent = link.icon;
+                return (
+                  <li key={link.name}>
+                    {/*
+                      Touch-friendly link targets:
+                      - min-h-[44px] and min-w-[44px] ensure minimum 44x44px touch target
+                      - px-3 py-2 provides comfortable padding
+                      - rounded-md for better visual touch affordance
+                      Requirements: 5.3
+                    */}
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={link.ariaLabel}
+                      className="
+                        inline-flex items-center justify-center gap-2
+                        text-muted-foreground
+                        transition-colors duration-200
+                        hover:text-foreground hover:bg-accent
+                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                        px-3 py-2
+                        min-h-[44px] min-w-[44px]
+                        rounded-md
+                      "
+                    >
+                      <IconComponent className="h-5 w-5" />
+                      <span className="text-sm">{link.ctaText}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </div>
       </div>
     </footer>
   );
