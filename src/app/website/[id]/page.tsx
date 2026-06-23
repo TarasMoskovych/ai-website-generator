@@ -1040,7 +1040,7 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
           aria-label="Fullscreen preview"
         >
           {/* Fullscreen header */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-background border-b border-border">
+          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-6 py-4 bg-background border-b border-border">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -1094,7 +1094,7 @@ function WebsitePageContent({ websiteId }: { websiteId: string }) {
 </head>
 <body>${sanitize(editedHtml)}</body>
 </html>`}
-            className="w-full h-full pt-14"
+            className="w-full h-full pt-[72px]"
             sandbox="allow-same-origin"
             title="Fullscreen website preview"
           />
