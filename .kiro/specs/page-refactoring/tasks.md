@@ -67,7 +67,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
 - [~] 3. Checkpoint - Verify shared components
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Create auth and layout components
+- [x] 4. Create auth and layout components
   - [x] 4.1 Create GoogleSignInButton component
     - Create `src/components/auth/GoogleSignInButton.tsx`
     - Accept onClick, isLoading, and optional disabled props
@@ -75,7 +75,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Render accessible button with loading state and aria-busy attribute
     - _Requirements: 9.1, 9.2_
 
-  - [~] 4.2 Update auth components barrel export
+  - [x] 4.2 Update auth components barrel export
     - Update `src/components/auth/index.ts` with GoogleSignInButton export
     - _Requirements: 9.2_
 
@@ -86,7 +86,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Minimum 44x44px touch target for WCAG compliance
     - _Requirements: 10.2, 10.3_
 
-  - [~] 4.4 Update layout components barrel export
+  - [x] 4.4 Update layout components barrel export
     - Update `src/components/layout/index.ts` with ShowcaseLink export
     - _Requirements: 10.4_
 
@@ -110,7 +110,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 7. Rewrite useSSEStream hook with eventsource-parser
-  - [~] 7.1 Rewrite useSSEStream hook implementation
+  - [x] 7.1 Rewrite useSSEStream hook implementation
     - Delete existing implementation and create new at `src/hooks/useSSEStream.ts`
     - Import createParser from eventsource-parser
     - Call parser.feed(decodedChunk) for each stream chunk

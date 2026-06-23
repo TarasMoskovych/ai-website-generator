@@ -1,18 +1,20 @@
 /**
  * useSSEStream Custom Hook
  * Handles Server-Sent Events stream processing with abort capability
+ * Uses eventsource-parser library for robust SSE parsing
  *
- * Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8
+ * Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11, 12.1, 12.2, 12.3, 12.4
  */
 
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { createParser, type EventSourceParser } from 'eventsource-parser';
 
 /**
  * SSE event structure parsed from the stream
  * Requirement 4.1: Accept configuration with onEvent callback
- * Requirement 4.4: Parse event type and data, invoke onEvent callback
+ * Requirement 4.9: Maintain existing onEvent callback signature
  */
 export interface SSEEvent {
   /** Event type (e.g., 'start', 'text', 'done', 'error') */
@@ -24,6 +26,8 @@ export interface SSEEvent {
 /**
  * Configuration for the useSSEStream hook
  * Requirement 4.1: Accept configuration object with url, method, headers, body, onEvent
+ * Requirement 4.6: Accept optional onTextChunk callback
+ * Requirement 4.7: Accept optional onResult callback
  */
 export interface UseSSEStreamConfig {
   /** API endpoint URL */
@@ -34,13 +38,19 @@ export interface UseSSEStreamConfig {
   headers: Record<string, string>;
   /** Request body (will be JSON stringified) */
   body: unknown;
-  /** Callback invoked for each parsed SSE event */
+  /** Callback invoked for each parsed SSE event (backward compatible) */
   onEvent: (event: SSEEvent) => void;
+  /** NEW: Callback for text chunk events with content */
+  onTextChunk?: (content: string) => void;
+  /** NEW: Callback when done event contains result */
+  onResult?: (result: unknown) => void;
 }
 
 /**
  * Return type for the useSSEStream hook
  * Requirement 4.2: Return object with isStreaming, error, streamingContent, start, cancel
+ * Requirement 4.8: Expose result state initialized to null
+ * Requirement 4.10: Maintain existing return interface
  */
 export interface UseSSEStreamReturn {
   /** Whether streaming is currently active */
@@ -49,6 +59,8 @@ export interface UseSSEStreamReturn {
   error: string | null;
   /** Accumulated streaming content (for preview) */
   streamingContent: string;
+  /** NEW: Result from done event, null until received */
+  result: unknown | null;
   /** Function to start the stream */
   start: () => Promise<void>;
   /** Function to cancel the ongoing stream */
@@ -56,34 +68,45 @@ export interface UseSSEStreamReturn {
 }
 
 /**
- * Hook for processing Server-Sent Events streams
+ * Hook for processing Server-Sent Events streams using eventsource-parser
  *
  * Requirement 4.1: Accept configuration object with url, method, headers, body, onEvent
  * Requirement 4.2: Return object with isStreaming, error, streamingContent, start, cancel
- * Requirement 4.3: start() initiates fetch request and begins processing SSE stream
- * Requirement 4.4: Parse SSE events and invoke onEvent callback
- * Requirement 4.5: cancel() aborts ongoing fetch request and marks streaming as stopped immediately
- * Requirement 4.6: Set error state and stop streaming on errors
- * Requirement 4.7: Abort doesn't set error state
- * Requirement 4.8: Located at src/hooks/useSSEStream.ts
+ * Requirement 4.3: Use createParser from eventsource-parser for all SSE event parsing
+ * Requirement 4.4: Call parser.feed(decodedChunk) for each stream chunk
+ * Requirement 4.5: Call parser.reset({ consume: true }) on stream completion
+ * Requirement 4.6: Accept optional onTextChunk callback for text events with content
+ * Requirement 4.7: Accept optional onResult callback when done event contains result
+ * Requirement 4.8: Expose result state initialized to null
+ * Requirement 4.9: Maintain existing onEvent callback for every parsed event
+ * Requirement 4.10: Maintain existing return interface
+ * Requirement 4.11: Maintain abort behavior - cancel() doesn't set error state
  *
- * @param config - Stream configuration with URL, method, headers, body, and event handler
- * @returns Object with streaming state, error, content, and control functions
+ * @param config - Stream configuration with URL, method, headers, body, and event handlers
+ * @returns Object with streaming state, error, content, result, and control functions
  *
  * @example
  * ```tsx
  * function GeneratePage() {
  *   const [result, setResult] = useState(null);
  *
- *   const { isStreaming, error, streamingContent, start, cancel } = useSSEStream({
+ *   const { isStreaming, error, streamingContent, result, start, cancel } = useSSEStream({
  *     url: '/api/generate/stream',
  *     method: 'POST',
  *     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
  *     body: { type: 'text', description: prompt },
  *     onEvent: (event) => {
- *       if (event.type === 'done') {
- *         setResult(event.data.result);
+ *       // Handle all events for custom logic
+ *     },
+ *     onTextChunk: (content) => {
+ *       // Detect stage transitions from content
+ *       if (content.includes('\`\`\`css')) {
+ *         setStage('generating_css');
  *       }
+ *     },
+ *     onResult: (result) => {
+ *       // Handle final result
+ *       setResult(result);
  *     },
  *   });
  *
@@ -100,6 +123,7 @@ export function useSSEStream(config: UseSSEStreamConfig): UseSSEStreamReturn {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [streamingContent, setStreamingContent] = useState('');
+  const [result, setResult] = useState<unknown | null>(null);
 
   // Store abort controller in ref to access it from cancel()
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -114,23 +138,26 @@ export function useSSEStream(config: UseSSEStreamConfig): UseSSEStreamReturn {
 
   /**
    * Cancel the ongoing stream
-   * Requirement 4.5: Abort ongoing fetch request and mark streaming as stopped immediately
+   * Requirement 4.11: Abort ongoing fetch request and mark streaming as stopped immediately
+   * Requirement 4.11: cancel() doesn't set error state
    */
   const cancel = useCallback((): void => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    // Requirement 4.5: Mark streaming as stopped immediately
+    // Requirement 4.11: Mark streaming as stopped immediately
     setIsStreaming(false);
   }, []);
 
   /**
    * Start the SSE stream
-   * Requirement 4.3: Initiate fetch request and begin processing SSE stream
+   * Requirement 4.3: Use createParser from eventsource-parser
+   * Requirement 4.4: Call parser.feed(decodedChunk) for each chunk
+   * Requirement 4.5: Call parser.reset({ consume: true }) on stream completion
    */
   const start = useCallback(async (): Promise<void> => {
-    const { url, method, headers, body, onEvent } = configRef.current;
+    const { url, method, headers, body, onEvent, onTextChunk, onResult } = configRef.current;
 
     // Cancel any existing stream
     if (abortControllerRef.current) {
@@ -145,6 +172,58 @@ export function useSSEStream(config: UseSSEStreamConfig): UseSSEStreamReturn {
     setIsStreaming(true);
     setError(null);
     setStreamingContent('');
+    setResult(null);
+
+    // Accumulator for streaming content (needed for state updates)
+    let accumulatedContent = '';
+
+    // Create SSE parser using eventsource-parser library
+    // Requirement 4.3: Create parser with onEvent callback
+    const parser: EventSourceParser = createParser({
+      onEvent: (event) => {
+        const eventType = event.event;
+        const eventData = event.data;
+
+        if (!eventType || !eventData) return;
+
+        try {
+          const data = JSON.parse(eventData);
+
+          // Requirement 4.9: Invoke onEvent callback for every parsed event
+          const sseEvent: SSEEvent = {
+            type: eventType,
+            data,
+          };
+          onEvent(sseEvent);
+
+          // Requirement 4.6: Invoke onTextChunk for text events with content
+          if (eventType === 'text' && data && typeof data === 'object' && 'content' in data) {
+            const content = (data as { content: string }).content;
+            accumulatedContent += content;
+            setStreamingContent(accumulatedContent);
+
+            if (onTextChunk) {
+              onTextChunk(content);
+            }
+          }
+
+          // Requirement 4.7 & 4.8: Handle done event with result
+          if (eventType === 'done' && data && typeof data === 'object' && 'result' in data) {
+            const resultData = (data as { result: unknown }).result;
+            setResult(resultData);
+
+            if (onResult) {
+              onResult(resultData);
+            }
+          }
+        } catch (e) {
+          // Skip malformed JSON events (SyntaxError)
+          if (!(e instanceof SyntaxError)) {
+            throw e;
+          }
+        }
+      },
+    });
 
     try {
       const response = await fetch(url, {
@@ -164,67 +243,30 @@ export function useSSEStream(config: UseSSEStreamConfig): UseSSEStreamReturn {
       }
 
       const decoder = new TextDecoder();
-      let buffer = '';
 
       // Process the stream
+      // Requirement 4.4: Call parser.feed(decodedChunk) for each chunk
       while (true) {
         const { done, value } = await reader.read();
 
-        if (done) break;
-
-        // Decode the chunk and add to buffer
-        buffer += decoder.decode(value, { stream: true });
-
-        // Parse SSE events from buffer
-        // SSE format: event: {type}\ndata: {json}\n\n
-        const lines = buffer.split('\n');
-        // Keep the last incomplete line in the buffer
-        buffer = lines.pop() || '';
-
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-
-          // Check for event line
-          if (line.startsWith('event: ')) {
-            const eventType = line.slice(7);
-            const dataLine = lines[i + 1];
-
-            // Check if next line is a data line
-            if (dataLine?.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(dataLine.slice(6));
-
-                // Requirement 4.4: Parse event type and data, invoke onEvent callback
-                const sseEvent: SSEEvent = {
-                  type: eventType,
-                  data,
-                };
-                onEvent(sseEvent);
-
-                // Accumulate text content for live preview
-                if (eventType === 'text' && data && typeof data === 'object' && 'content' in data) {
-                  setStreamingContent((prev) => prev + (data as { content: string }).content);
-                }
-              } catch (e) {
-                // Skip malformed JSON events
-                if (!(e instanceof SyntaxError)) {
-                  throw e;
-                }
-              }
-              // Skip the data line we just processed
-              i++;
-            }
-          }
+        if (done) {
+          // Requirement 4.5: Call parser.reset({ consume: true }) on completion
+          parser.reset({ consume: true });
+          break;
         }
+
+        // Decode the chunk and feed to parser
+        const decodedChunk = decoder.decode(value, { stream: true });
+        parser.feed(decodedChunk);
       }
     } catch (err) {
-      // Requirement 4.7: Abort doesn't set error state
+      // Requirement 4.11: Abort doesn't set error state
       if (err instanceof Error && err.name === 'AbortError') {
         // Request was aborted, don't set error
         return;
       }
 
-      // Requirement 4.6: Set error state on errors
+      // Set error state on errors
       const message =
         err instanceof Error
           ? err.message
@@ -244,6 +286,7 @@ export function useSSEStream(config: UseSSEStreamConfig): UseSSEStreamReturn {
     isStreaming,
     error,
     streamingContent,
+    result,
     start,
     cancel,
   };
