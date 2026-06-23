@@ -64,7 +64,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Update `src/components/common/index.ts` with LoadingSpinner, WebsiteNotFound, WebsiteCardSkeleton exports
     - _Requirements: 1.6, 2.6_
 
-- [~] 3. Checkpoint - Verify shared components
+- [ ] 3. Checkpoint - Verify shared components
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 4. Create auth and layout components
@@ -106,10 +106,10 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Handle loading skeleton and empty states
     - _Requirements: 9.3, 9.4_
 
-- [~] 6. Checkpoint - Verify all components
+- [ ] 6. Checkpoint - Verify all components
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. Rewrite useSSEStream hook with eventsource-parser
+- [x] 7. Rewrite useSSEStream hook with eventsource-parser
   - [x] 7.1 Rewrite useSSEStream hook implementation
     - Delete existing implementation and create new at `src/hooks/useSSEStream.ts`
     - Import createParser from eventsource-parser
@@ -121,12 +121,12 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Maintain abort behavior: cancel() doesn't set error state
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10, 4.11, 12.1, 12.2, 12.3, 12.4_
 
-  - [~] 7.2 Write property test for useSSEStream parser completion
+  - [x] 7.2 Write property test for useSSEStream parser completion
     - **Property 2: useSSEStream Parser Completion**
     - Test parser.reset({ consume: true }) is called on stream completion
     - **Validates: Requirements 4.5, 12.3**
 
-  - [~] 7.3 Write property test for useSSEStream callback invocations
+  - [x] 7.3 Write property test for useSSEStream callback invocations
     - **Property 3: useSSEStream Callback Invocations**
     - Test onEvent invoked for every parsed event
     - Test onTextChunk invoked for text events with content
@@ -134,13 +134,13 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Test result state updated from done event
     - **Validates: Requirements 4.6, 4.7, 4.8, 4.9**
 
-  - [~] 7.4 Write property test for useSSEStream cancel behavior
+  - [x] 7.4 Write property test for useSSEStream cancel behavior
     - **Property 4: useSSEStream Cancel Behavior**
     - Test cancel() sets isStreaming=false immediately
     - Test cancel() does NOT set error state
     - **Validates: Requirements 4.11**
 
-  - [~] 7.5 Update useSSEStream unit tests
+  - [x] 7.5 Update useSSEStream unit tests
     - Update `src/hooks/useSSEStream.test.ts` for eventsource-parser implementation
     - Verify createParser usage
     - Verify parser.reset({ consume: true }) on completion
@@ -149,7 +149,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
 
 - [ ] 8. Create useAutoSave hook
-  - [~] 8.1 Create useAutoSave hook implementation
+  - [x] 8.1 Create useAutoSave hook implementation
     - Create `src/hooks/useAutoSave.ts`
     - Accept generic type parameter for values
     - Accept config: currentValues, originalValues, onSave callback, delay (100-30000ms)
@@ -161,7 +161,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Clean up timeout on unmount
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9_
 
-  - [~] 8.2 Write property test for useAutoSave debounced save behavior
+  - [ ] 8.2 Write property test for useAutoSave debounced save behavior
     - **Property 5: useAutoSave Debounced Save Behavior**
     - Create `src/hooks/useAutoSave.test.ts`
     - Test save invoked once after delay from last change
@@ -169,31 +169,31 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Test no save when values return to original before delay
     - **Validates: Requirements 5.4, 5.7**
 
-  - [~] 8.3 Write property test for useAutoSave success state
+  - [ ] 8.3 Write property test for useAutoSave success state
     - **Property 6: useAutoSave Success State**
     - Test lastSaved updated on successful save
     - Test hasUnsavedChanges set to false
     - Test saveError cleared
     - **Validates: Requirements 5.5**
 
-  - [~] 8.4 Write property test for useAutoSave error state
+  - [ ] 8.4 Write property test for useAutoSave error state
     - **Property 7: useAutoSave Error State**
     - Test saveError set on failed save
     - Test hasUnsavedChanges remains true
     - Test lastSaved not updated
     - **Validates: Requirements 5.6**
 
-  - [~] 8.5 Write property test for useAutoSave save serialization
+  - [ ] 8.5 Write property test for useAutoSave save serialization
     - **Property 8: useAutoSave Save Serialization**
     - Test saves are never concurrent
     - Test waits for current save before new save
     - **Validates: Requirements 5.8**
 
-- [~] 9. Checkpoint - Verify hooks implementation
+- [ ] 9. Checkpoint - Verify hooks implementation
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 10. Create useBeautifyWorkflow hook
-  - [~] 10.1 Create useBeautifyWorkflow hook implementation
+  - [ ] 10.1 Create useBeautifyWorkflow hook implementation
     - Create `src/hooks/useBeautifyWorkflow.ts`
     - Accept config: websiteId, currentHtml, currentCss, originalPrompt
     - Manage states: isBeautifying, beautifyStage, streamingContent, beautifiedHtml, beautifiedCss, beautifyError
@@ -204,7 +204,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Expose dialog handlers: handleConfirm, handleAccept, handleReject, handleRetry, handleDismiss
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10, 6.11, 6.12, 6.13, 6.14, 6.15_
 
-  - [~] 10.2 Write property test for useBeautifyWorkflow cancel behavior
+  - [ ] 10.2 Write property test for useBeautifyWorkflow cancel behavior
     - **Property 9: useBeautifyWorkflow Cancel Behavior**
     - Create `src/hooks/useBeautifyWorkflow.test.ts`
     - Test cancelBeautify aborts request
@@ -212,7 +212,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Test beautifyError not set on cancel
     - **Validates: Requirements 6.6**
 
-  - [~] 10.3 Write property test for useBeautifyWorkflow state machine
+  - [ ] 10.3 Write property test for useBeautifyWorkflow state machine
     - **Property 10: useBeautifyWorkflow State Machine**
     - Test stage transitions: analyzing â†’ completing/enhancing â†’ finalizing
     - Test beautifiedHtml/beautifiedCss populated on success
@@ -220,17 +220,17 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Test beautifyError set on failure
     - **Validates: Requirements 6.13, 6.14, 6.15**
 
-  - [~] 10.4 Write unit tests for useBeautifyWorkflow
+  - [ ] 10.4 Write unit tests for useBeautifyWorkflow
     - Test initial state values
     - Test dialog state management
     - Test all handler functions
     - _Requirements: 6.3, 6.4, 6.7, 6.8, 6.9, 6.10, 6.11_
 
-- [~] 11. Checkpoint - Verify all hooks complete
+- [ ] 11. Checkpoint - Verify all hooks complete
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 12. Refactor Website page
-  - [~] 12.1 Refactor Website page to use extracted components and hooks
+  - [ ] 12.1 Refactor Website page to use extracted components and hooks
     - Update `src/app/website/[id]/page.tsx`
     - Import LoadingSpinner from src/components/common
     - Import WebsiteNotFound from src/components/common
@@ -242,7 +242,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Target: under 400 lines
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
 
-  - [~] 12.2 Verify Website page line count and functionality
+  - [ ] 12.2 Verify Website page line count and functionality
     - Verify file is under 400 lines
     - Verify iframe preview with viewport mode switching works
     - Verify HTML/CSS editing with live preview works
@@ -254,7 +254,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - _Requirements: 7.6, 7.7_
 
 - [ ] 13. Refactor Generate page
-  - [~] 13.1 Refactor Generate page to use useSSEStream hook
+  - [ ] 13.1 Refactor Generate page to use useSSEStream hook
     - Update `src/app/generate/page.tsx`
     - Remove SSE-specific code from generateFromText function
     - Remove SSE-specific code from generateFromScreenshot function
@@ -264,7 +264,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Target: under 400 lines
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 12.5_
 
-  - [~] 13.2 Verify Generate page line count and functionality
+  - [ ] 13.2 Verify Generate page line count and functionality
     - Verify file is under 400 lines
     - Verify mode switching between text and screenshot works
     - Verify input validation before generation
@@ -273,11 +273,11 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Verify error display preserves input for retry
     - _Requirements: 8.6, 8.7, 8.8_
 
-- [~] 14. Checkpoint - Verify core page refactoring
+- [ ] 14. Checkpoint - Verify core page refactoring
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 15. Refactor Login page
-  - [~] 15.1 Refactor Login page to use extracted components
+  - [ ] 15.1 Refactor Login page to use extracted components
     - Update `src/app/page.tsx`
     - Import LoadingSpinner from src/components/common
     - Import GoogleSignInButton from src/components/auth
@@ -286,7 +286,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Target: under 300 lines
     - _Requirements: 9.5, 9.6, 9.7, 9.8_
 
-  - [~] 15.2 Verify Login page line count and functionality
+  - [ ] 15.2 Verify Login page line count and functionality
     - Verify file is under 300 lines
     - Verify Google OAuth sign-in works
     - Verify error display with dismiss works
@@ -295,7 +295,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - _Requirements: 9.8, 9.9_
 
 - [ ] 16. Refactor Dashboard page
-  - [~] 16.1 Refactor Dashboard page to use extracted components
+  - [ ] 16.1 Refactor Dashboard page to use extracted components
     - Update `src/app/dashboard/page.tsx`
     - Import LoadingSpinner from src/components/common
     - Import ShowcaseLink from src/components/layout
@@ -303,7 +303,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Target: under 350 lines
     - _Requirements: 10.1, 10.4, 10.5_
 
-  - [~] 16.2 Verify Dashboard page line count and functionality
+  - [ ] 16.2 Verify Dashboard page line count and functionality
     - Verify file is under 350 lines
     - Verify website grid with WebsiteCard works
     - Verify pagination works
@@ -313,7 +313,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - _Requirements: 10.5, 10.6_
 
 - [ ] 17. Refactor Showcase page
-  - [~] 17.1 Refactor Showcase page to use extracted components
+  - [ ] 17.1 Refactor Showcase page to use extracted components
     - Update `src/app/showcase/page.tsx`
     - Import ShowcaseWebsiteCard from src/components
     - Import WebsiteCardSkeleton from src/components/common
@@ -321,7 +321,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Target: under 200 lines
     - _Requirements: 11.5, 11.6, 11.7_
 
-  - [~] 17.2 Verify Showcase page line count and functionality
+  - [ ] 17.2 Verify Showcase page line count and functionality
     - Verify file is under 200 lines
     - Verify website grid works
     - Verify pagination works
@@ -331,13 +331,13 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - _Requirements: 11.7, 11.8_
 
 - [ ] 18. Final verification and cleanup
-  - [~] 18.1 Verify no manual SSE parsing remains
+  - [ ] 18.1 Verify no manual SSE parsing remains
     - Search codebase for string splitting on newlines for SSE parsing
     - Search for regex matching 'event:' or 'data:' prefixes
     - Verify all SSE handling uses eventsource-parser
     - _Requirements: 12.5, 12.6_
 
-  - [~] 18.2 Verify all existing tests pass
+  - [ ] 18.2 Verify all existing tests pass
     - Run full test suite
     - Ensure useBeautifySave.test.ts passes
     - Ensure useShowcaseWebsites.test.ts passes
@@ -345,7 +345,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Ensure WebsiteCard.test.tsx passes
     - _Requirements: 13.6_
 
-  - [~] 18.3 Verify all line count targets met
+  - [ ] 18.3 Verify all line count targets met
     - website/[id]/page.tsx: < 400 lines
     - generate/page.tsx: < 400 lines
     - page.tsx (Login): < 300 lines
@@ -353,7 +353,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - showcase/page.tsx: < 200 lines
     - _Requirements: 7.6, 8.6, 9.8, 10.5, 11.7_
 
-- [~] 19. Final checkpoint - Complete verification
+- [ ] 19. Final checkpoint - Complete verification
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
