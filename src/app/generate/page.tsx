@@ -85,6 +85,8 @@ function GeneratePageContent() {
   const handleTextChunk = useCallback((content: string) => {
     if (content.includes('```css')) {
       setGenerationStage('generating_css');
+    } else if (content.includes('```html')) {
+      setGenerationStage('generating_html');
     } else if (content.includes('Title:')) {
       setGenerationStage('finalizing');
     }
