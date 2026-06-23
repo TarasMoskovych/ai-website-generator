@@ -21,6 +21,7 @@ import Image from 'next/image';
 import { useShowcaseWebsites } from '@/hooks/useShowcaseWebsites';
 import { Pagination } from '@/components/Pagination';
 import { ArrowLeftIcon, GlobeIcon } from '@/components/icons';
+import { AppFooter } from '@/components/layout';
 import type { ShowcasedWebsite } from '@/types/website';
 
 
@@ -254,6 +255,9 @@ export default function ShowcasePage() {
           </>
         )}
       </main>
+
+      {/* Footer */}
+      <AppFooter />
     </div>
   );
 }

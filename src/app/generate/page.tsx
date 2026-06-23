@@ -39,7 +39,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute, useAuth } from '@/components/auth';
-import { AppHeader } from '@/components/layout';
+import { AppHeader, AppFooter } from '@/components/layout';
 import { InputModeSelector } from '@/components/InputModeSelector';
 import { TextInput } from '@/components/TextInput';
 import { ScreenshotUpload } from '@/components/ScreenshotUpload';
@@ -746,6 +746,9 @@ function GeneratePageContent() {
         onConfirm={handleConfirmModeSwitch}
         onCancel={handleCancelModeSwitch}
       />
+
+      {/* Footer */}
+      <AppFooter />
     </div>
   );
 }

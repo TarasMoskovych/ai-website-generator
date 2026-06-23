@@ -29,7 +29,7 @@
 import { useState, useEffect, useCallback, useRef, use, Suspense } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { ProtectedRoute, useAuth } from '@/components/auth';
-import { AppHeader } from '@/components/layout';
+import { AppHeader, AppFooter } from '@/components/layout';
 import { PreviewRenderer } from '@/components/PreviewRenderer';
 import { CodeEditor } from '@/components/CodeEditor';
 import { ErrorMessage } from '@/components/common/ErrorMessage';
@@ -1184,6 +1184,9 @@ export default function WebsitePage({ params }: WebsitePageProps) {
             <WebsitePageContent websiteId={websiteId} />
           </Suspense>
         </main>
+
+        {/* Footer */}
+        <AppFooter />
       </div>
     </ProtectedRoute>
   );

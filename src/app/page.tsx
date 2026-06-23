@@ -26,6 +26,7 @@ import Image from 'next/image';
 import { useAuth, getAndClearRedirectUrl } from '@/components/auth';
 import { useShowcaseWebsites } from '@/hooks/useShowcaseWebsites';
 import { GlobeIcon, ArrowRightIcon } from '@/components/icons';
+import { AppFooter } from '@/components/layout';
 import type { ShowcasedWebsite } from '@/types/website';
 
 /**
@@ -482,6 +483,9 @@ export default function LoginPage() {
 
       {/* Community Showcase Section - Different Background */}
       <CommunityShowcase />
+
+      {/* Footer */}
+      <AppFooter />
     </main>
   );
 }
