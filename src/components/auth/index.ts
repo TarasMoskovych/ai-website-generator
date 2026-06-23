@@ -15,3 +15,6 @@ export type { ProtectedRouteProps } from './ProtectedRoute';
 
 export { UserProfileMenu } from './UserProfileMenu';
 export type { UserProfileMenuProps } from './UserProfileMenu';
+
+export { GoogleSignInButton } from './GoogleSignInButton';
+export type { GoogleSignInButtonProps } from './GoogleSignInButton';

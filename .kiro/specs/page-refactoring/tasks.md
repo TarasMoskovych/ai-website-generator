@@ -25,7 +25,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Test: output contains only [a-z0-9-], no consecutive hyphens, max 50 chars, non-empty
     - **Validates: Requirements 3.3, 3.4**
 
-- [ ] 2. Create shared UI components
+- [x] 2. Create shared UI components
   - [x] 2.1 Create LoadingSpinner component
     - Create `src/components/common/LoadingSpinner.tsx`
     - Accept optional `message` prop (max 100 chars, default "Loading...")
@@ -33,7 +33,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Render 40x40px spinner with primary color theme
     - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-  - [~] 2.2 Write unit tests for LoadingSpinner
+  - [x] 2.2 Write unit tests for LoadingSpinner
     - Create tests for default message, custom message, message truncation
     - Test fullScreen height class application
     - Test spinner dimensions
@@ -47,7 +47,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Default navigation to /dashboard when callback not provided
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-  - [~] 2.4 Write unit tests for WebsiteNotFound
+  - [x] 2.4 Write unit tests for WebsiteNotFound
     - Test all elements render correctly
     - Test callback invocation when provided
     - Test default navigation behavior
@@ -60,7 +60,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Use animate-pulse class for skeleton animation
     - _Requirements: 11.3, 11.4_
 
-  - [~] 2.6 Update common components barrel export
+  - [x] 2.6 Update common components barrel export
     - Update `src/components/common/index.ts` with LoadingSpinner, WebsiteNotFound, WebsiteCardSkeleton exports
     - _Requirements: 1.6, 2.6_
 
@@ -68,7 +68,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Create auth and layout components
-  - [~] 4.1 Create GoogleSignInButton component
+  - [x] 4.1 Create GoogleSignInButton component
     - Create `src/components/auth/GoogleSignInButton.tsx`
     - Accept onClick, isLoading, and optional disabled props
     - Include GoogleIcon SVG internally
@@ -79,7 +79,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Update `src/components/auth/index.ts` with GoogleSignInButton export
     - _Requirements: 9.2_
 
-  - [~] 4.3 Create ShowcaseLink component
+  - [x] 4.3 Create ShowcaseLink component
     - Create `src/components/layout/ShowcaseLink.tsx`
     - Render navigation link to /showcase with globe icon
     - Responsive text display (hidden on mobile)
@@ -90,8 +90,8 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Update `src/components/layout/index.ts` with ShowcaseLink export
     - _Requirements: 10.4_
 
-- [ ] 5. Create feature-specific components
-  - [~] 5.1 Create ShowcaseWebsiteCard component
+- [x] 5. Create feature-specific components
+  - [x] 5.1 Create ShowcaseWebsiteCard component
     - Create `src/components/ShowcaseWebsiteCard.tsx`
     - Accept website prop of type ShowcasedWebsite
     - Render card with thumbnail, title, creator name
@@ -99,7 +99,7 @@ The implementation follows a layered approach: utilities â†’ shared components â
     - Use Next.js Image component with fallback to globe icon
     - _Requirements: 11.1, 11.2_
 
-  - [~] 5.2 Create ShowcasePreview component
+  - [x] 5.2 Create ShowcasePreview component
     - Create `src/components/ShowcasePreview.tsx`
     - Use useShowcaseWebsites hook with pageSize of 6
     - Include internal ShowcaseCard component

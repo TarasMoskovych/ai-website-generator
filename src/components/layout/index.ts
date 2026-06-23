@@ -14,3 +14,5 @@ export type { AppHeaderProps } from './AppHeader';
 
 export { AppFooter } from './AppFooter';
 export type { AppFooterProps } from './AppFooter';
+
+export { ShowcaseLink } from './ShowcaseLink';
