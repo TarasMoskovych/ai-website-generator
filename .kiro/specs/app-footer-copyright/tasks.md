@@ -18,7 +18,7 @@ The implementation is organized into:
     - Accept `className` prop for styling flexibility
     - _Requirements: 1.2, 1.3, 4.3, 4.4_
 
-  - [~] 1.2 Implement AppFooter component structure
+  - [x] 1.2 Implement AppFooter component structure
     - Create `src/components/layout/AppFooter.tsx`
     - Define `AppFooterProps` interface with optional `className` prop
     - Use semantic `<footer>` element with `role="contentinfo"`

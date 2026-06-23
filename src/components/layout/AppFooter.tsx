@@ -64,5 +64,38 @@ function LinkedInIcon({ className }: { className?: string }) {
   );
 }
 
+/**
+ * AppFooter component
+ * Main application footer with copyright notice, social links, and call-to-action text
+ *
+ * Requirements:
+ * - 1.1: Display copyright notice with current year and developer name
+ * - 4.5: Use semantic HTML elements with appropriate ARIA roles for accessibility
+ * - 6.1: Created in src/components/layout directory following existing component patterns
+ */
+export function AppFooter({ className }: AppFooterProps) {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer
+      className={`
+        border-t border-border
+        bg-background
+        ${className ?? ''}
+      `}
+      role="contentinfo"
+    >
+      <div className="container mx-auto px-4 py-6">
+        {/* Copyright and social links will be implemented in subsequent tasks */}
+        <p className="text-muted-foreground">
+          © {currentYear} Taras Moskovych
+        </p>
+      </div>
+    </footer>
+  );
+}
+
+export default AppFooter;
+
 // Export icon components for use in tests
 export { GitHubIcon, LinkedInIcon };
