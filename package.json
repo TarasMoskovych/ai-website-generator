@@ -47,6 +47,7 @@
     "eslint-config-next": "16.2.9",
     "eslint-config-prettier": "^10",
     "fast-check": "^4.8.0",
+    "happy-dom": "20.10.6",
     "jsdom": "^29.1.1",
     "prettier": "^3",
     "prettier-plugin-tailwindcss": "^0.6",
