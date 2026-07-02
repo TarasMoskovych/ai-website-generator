@@ -9,10 +9,12 @@
 
 import { initializeApp, getApps, cert, App, ServiceAccount } from 'firebase-admin/app';
 import { getAuth, Auth } from 'firebase-admin/auth';
+import { getFirestore as getAdminFirestore, Firestore } from 'firebase-admin/firestore';
 
 // Cached instances
 let adminApp: App | null = null;
 let adminAuthInstance: Auth | null = null;
+let adminFirestoreInstance: Firestore | null = null;
 
 /**
  * Checks if Firebase Admin SDK credentials are configured.
@@ -130,6 +132,23 @@ export function getAdminAuth(): Auth {
   const app = getFirebaseAdminApp();
   adminAuthInstance = getAuth(app);
   return adminAuthInstance;
+}
+
+/**
+ * Gets the Firebase Admin Firestore instance for server-side data access.
+ * Lazy initialization to avoid build-time errors when env vars are not set.
+ *
+ * @returns The Firebase Admin Firestore instance
+ * @throws Error if credentials are not configured
+ */
+export function getAdminDb(): Firestore {
+  if (adminFirestoreInstance) {
+    return adminFirestoreInstance;
+  }
+
+  const app = getFirebaseAdminApp();
+  adminFirestoreInstance = getAdminFirestore(app);
+  return adminFirestoreInstance;
 }
 
 /**
