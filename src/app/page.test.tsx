@@ -1,24 +1,22 @@
 /**
- * CommunityShowcase Component Integration Tests
+ * Login Page Server Sections - Unit Tests
  *
- * Tests that verify the CommunityShowcase component works correctly with:
- * - useShowcaseWebsites hook integration with pageSize of 6
- * - Icons from shared Icons module (GlobeIcon, ArrowRightIcon)
- * - Loading states
- * - Empty states
- * - Website cards link correctly
+ * Tests that verify the Login page server component renders correctly:
+ * - Hero section renders title, description, and logo without JS
+ * - Features grid renders three feature cards
+ * - Showcase preview renders up to 6 items with mock data
+ * - Showcase preview shows empty state on fetch failure
+ * - AuthCard renders sign-in button and handles errors
  *
- * Validates: Requirements 9.1, 9.2, 9.3, 13.1
+ * Validates: Requirements 2.1, 2.2, 2.3, 2.5
  */
 
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import type { ShowcasedWebsite } from '@/types/website';
-import type { PaginatedResult } from '@/services/websiteRepository';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import type { ShowcasedWebsiteServer } from '@/lib/serverData';
 
-// We need to test CommunityShowcase in isolation, so we'll render the full page
-// and verify the CommunityShowcase section works correctly
+// ─── Mocks ──────────────────────────────────────────────────────────────────
 
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
@@ -32,24 +30,35 @@ vi.mock('next/navigation', () => ({
 
 // Mock next/image to render as a regular img
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
+  default: ({ src, alt, fill, ...props }: React.ImgHTMLAttributes<HTMLImageElement> & { fill?: boolean }) => (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} {...props} />
+    <img src={src as string} alt={alt} {...props} />
+  ),
+}));
+
+// Mock next/link to render as a regular anchor
+vi.mock('next/link', () => ({
+  default: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { children: React.ReactNode }) => (
+    <a href={href as string} {...props}>{children}</a>
   ),
 }));
 
 // Mock the auth context
+const mockSignInWithGoogle = vi.fn();
+const mockClearError = vi.fn();
+let mockAuthState = {
+  user: null as null | { uid: string },
+  loading: false,
+  isLoading: false,
+  error: null as string | null,
+  signInWithGoogle: mockSignInWithGoogle,
+  signOut: vi.fn(),
+  clearError: mockClearError,
+  getIdToken: vi.fn(),
+};
+
 vi.mock('@/components/auth/AuthProvider', () => ({
-  useAuth: () => ({
-    user: null,
-    loading: false,
-    isLoading: false,
-    error: null,
-    signInWithGoogle: vi.fn(),
-    signOut: vi.fn(),
-    clearError: vi.fn(),
-    getIdToken: vi.fn(),
-  }),
+  useAuth: () => mockAuthState,
   AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
@@ -59,484 +68,287 @@ vi.mock('@/components/auth/ProtectedRoute', () => ({
   ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('@/components/auth', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/components/auth')>();
-  return {
-    ...actual,
-    useAuth: () => ({
-      user: null,
-      loading: false,
-      isLoading: false,
-      error: null,
-      signInWithGoogle: vi.fn(),
-      clearError: vi.fn(),
-    }),
-    getAndClearRedirectUrl: () => null,
-    // GoogleSignInButton is imported from actual module
-  };
-});
-
-// Mock the websiteRepository
-const mockGetShowcasedWebsites = vi.fn();
-
-vi.mock('@/services/websiteRepository', () => ({
-  default: {
-    getShowcasedWebsites: (...args: unknown[]) => mockGetShowcasedWebsites(...args),
-  },
+// Mock getShowcasePreviewServer from serverData
+const mockGetShowcasePreviewServer = vi.fn();
+vi.mock('@/lib/serverData', () => ({
+  getShowcasePreviewServer: (...args: unknown[]) => mockGetShowcasePreviewServer(...args),
 }));
 
-// Helper to create mock showcased website
-function createMockShowcasedWebsite(id: string, overrides?: Partial<ShowcasedWebsite>): ShowcasedWebsite {
+// Mock AppFooter (client component)
+vi.mock('@/components/layout', () => ({
+  AppFooter: () => <footer data-testid="app-footer">Footer</footer>,
+}));
+
+// Mock ShowcasePreviewServer for page-level tests (async server component can't render in jsdom)
+let mockShowcaseContent: React.ReactNode = null;
+vi.mock('@/components/ShowcasePreviewServer', () => ({
+  ShowcasePreviewServer: () => mockShowcaseContent,
+  default: () => mockShowcaseContent,
+}));
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function createMockShowcaseItem(id: string, overrides?: Partial<ShowcasedWebsiteServer>): ShowcasedWebsiteServer {
   return {
     id,
-    title: `Test Website ${id}`,
-    thumbnailUrl: `data:image/png;base64,thumbnail-${id}`,
+    title: `Website ${id}`,
+    thumbnailUrl: `https://example.com/thumb-${id}.png`,
     creatorName: `Creator ${id}`,
-    showcasedAt: '2024-01-15T10:30:00Z',
+    showcasedAt: '2024-06-01T12:00:00Z',
     ...overrides,
   };
 }
 
-// Helper to create mock paginated result
-function createMockPaginatedResult(
-  count: number,
-  pageSize: number = 6
-): PaginatedResult<ShowcasedWebsite> {
-  const items: ShowcasedWebsite[] = [];
-
-  for (let i = 0; i < count; i++) {
-    items.push(createMockShowcasedWebsite(`website-${i + 1}`));
-  }
-
-  return {
-    items,
-    totalCount: count,
-    page: 1,
-    pageSize,
-    totalPages: Math.ceil(count / pageSize),
-  };
-}
-
-// Import the page component after mocks are set up
+// Import page component after mocks
 import LoginPage from './page';
 
-describe('CommunityShowcase Component Integration Tests', () => {
+// ─── Tests ──────────────────────────────────────────────────────────────────
+
+describe('Login Page - Server Sections', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetShowcasePreviewServer.mockResolvedValue([]);
+    mockShowcaseContent = <div data-testid="showcase-preview-mock">Showcase section</div>;
+    mockAuthState = {
+      user: null,
+      loading: false,
+      isLoading: false,
+      error: null,
+      signInWithGoogle: mockSignInWithGoogle,
+      signOut: vi.fn(),
+      clearError: mockClearError,
+      getIdToken: vi.fn(),
+    };
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+  describe('Hero Section (Requirement 2.1)', () => {
+    it('renders the application title', async () => {
+      const element = await LoginPage();
+      render(element);
 
-  describe('useShowcaseWebsites Hook Integration', () => {
-    /**
-     * Tests that the hook is called with correct pageSize of 6
-     * Validates: Requirement 9.1
-     */
-    it('fetches showcased websites with pageSize of 6', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue(
-        createMockPaginatedResult(6)
-      );
-
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(mockGetShowcasedWebsites).toHaveBeenCalledWith({
-          page: 1,
-          pageSize: 6,
-        });
-      });
+      expect(screen.getByRole('heading', { level: 1, name: /ai website generator/i })).toBeInTheDocument();
     });
 
-    /**
-     * Tests that up to 6 websites are displayed
-     * Validates: Requirements 9.1, 9.3
-     */
-    it('displays up to 6 showcased websites', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue(
-        createMockPaginatedResult(6)
-      );
+    it('renders the application description', async () => {
+      const element = await LoginPage();
+      render(element);
 
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
-      });
-
-      // Verify all 6 websites are rendered
-      expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
-      expect(screen.getByText('Test Website website-2')).toBeInTheDocument();
-      expect(screen.getByText('Test Website website-3')).toBeInTheDocument();
-      expect(screen.getByText('Test Website website-4')).toBeInTheDocument();
-      expect(screen.getByText('Test Website website-5')).toBeInTheDocument();
-      expect(screen.getByText('Test Website website-6')).toBeInTheDocument();
-
-      // Verify creator names
-      expect(screen.getByText('by Creator website-1')).toBeInTheDocument();
+      expect(screen.getByText(/generate complete websites from text descriptions or screenshots using ai/i)).toBeInTheDocument();
     });
 
-    /**
-     * Tests that less than 6 websites are displayed when fewer exist
-     * Validates: Requirement 9.3
-     */
-    it('displays all available websites when less than 6 exist', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue(
-        createMockPaginatedResult(3)
-      );
+    it('renders the logo icon', async () => {
+      const element = await LoginPage();
+      const { container } = render(element);
 
-      render(<LoginPage />);
+      // Logo container has aria-hidden and contains an SVG
+      const logoContainer = container.querySelector('[aria-hidden="true"]');
+      expect(logoContainer).toBeInTheDocument();
+      const svg = logoContainer!.querySelector('svg') || logoContainer!.closest('div')?.querySelector('svg');
+      // The first aria-hidden div with an SVG is the logo
+      expect(container.querySelector('[aria-hidden="true"] svg')).toBeInTheDocument();
+    });
 
-      await waitFor(() => {
-        expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
-      });
+    it('renders the page within a main element', async () => {
+      const element = await LoginPage();
+      const { container } = render(element);
 
-      // Verify only 3 websites are rendered
-      expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
-      expect(screen.getByText('Test Website website-2')).toBeInTheDocument();
-      expect(screen.getByText('Test Website website-3')).toBeInTheDocument();
-      expect(screen.queryByText('Test Website website-4')).not.toBeInTheDocument();
+      const main = container.querySelector('main');
+      expect(main).toBeInTheDocument();
+      expect(main).toHaveClass('min-h-screen');
     });
   });
 
-  describe('Icons Module Integration', () => {
-    /**
-     * Tests that GlobeIcon from Icons module is rendered in the section header
-     * Validates: Requirement 9.2
-     */
-    it('renders GlobeIcon in section header', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue(
-        createMockPaginatedResult(3)
-      );
+  describe('Features Grid (Requirement 2.1)', () => {
+    it('renders three feature cards', async () => {
+      const element = await LoginPage();
+      render(element);
 
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
-      });
-
-      // Find the Community Showcase section header
-      const heading = screen.getByRole('heading', { name: /community showcase/i });
-      const section = heading.closest('section');
-      expect(section).toBeInTheDocument();
-
-      // GlobeIcon should be in the header area
-      const svgIcons = section!.querySelectorAll('svg[aria-hidden="true"]');
-      expect(svgIcons.length).toBeGreaterThan(0);
+      expect(screen.getByText('Text to Website')).toBeInTheDocument();
+      expect(screen.getByText('Screenshot to Code')).toBeInTheDocument();
+      expect(screen.getByText('Download & Share')).toBeInTheDocument();
     });
 
-    /**
-     * Tests that ArrowRightIcon from Icons module is rendered in View All link
-     * Validates: Requirement 9.2
-     */
-    it('renders ArrowRightIcon in View All link', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue(
-        createMockPaginatedResult(3)
-      );
+    it('renders feature descriptions', async () => {
+      const element = await LoginPage();
+      render(element);
 
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
-      });
-
-      // Find the View All link
-      const viewAllLink = screen.getByRole('link', { name: /view all/i });
-      expect(viewAllLink).toBeInTheDocument();
-
-      // Should have an SVG icon with aria-hidden
-      const svgIcon = viewAllLink.querySelector('svg[aria-hidden="true"]');
-      expect(svgIcon).toBeInTheDocument();
+      expect(screen.getByText('Describe your vision')).toBeInTheDocument();
+      expect(screen.getByText('Upload a design')).toBeInTheDocument();
+      expect(screen.getByText('Export your sites')).toBeInTheDocument();
     });
 
-    /**
-     * Tests that icons have proper accessibility attributes
-     * Validates: Requirement 9.2
-     */
-    it('renders icons with aria-hidden for accessibility', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue(
-        createMockPaginatedResult(3)
-      );
+    it('renders feature icons with aria-hidden for accessibility', async () => {
+      const element = await LoginPage();
+      const { container } = render(element);
 
-      render(<LoginPage />);
+      // Find the features grid (3-column grid)
+      const grid = container.querySelector('.grid.grid-cols-3');
+      expect(grid).toBeInTheDocument();
 
-      await waitFor(() => {
-        expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
-      });
-
-      // Find Community Showcase section
-      const heading = screen.getByRole('heading', { name: /community showcase/i });
-      const section = heading.closest('section');
-
-      // All SVG icons in the section should have aria-hidden
-      const svgs = section!.querySelectorAll('svg');
-      svgs.forEach((svg) => {
-        expect(svg).toHaveAttribute('aria-hidden', 'true');
-      });
+      // Each feature card has a decorative icon container with aria-hidden
+      const iconContainers = grid!.querySelectorAll('[aria-hidden="true"]');
+      expect(iconContainers.length).toBe(3);
     });
   });
 
-  describe('Loading States', () => {
-    /**
-     * Tests that loading skeleton is shown while fetching
-     * Validates: Requirement 9.3
-     */
-    it('shows loading skeleton during initial load', async () => {
-      // Create a promise we can control to simulate loading state
-      let resolvePromise: (value: PaginatedResult<ShowcasedWebsite>) => void;
-      const loadingPromise = new Promise<PaginatedResult<ShowcasedWebsite>>((resolve) => {
-        resolvePromise = resolve;
-      });
+  describe('Showcase Preview - Success (Requirement 2.3)', () => {
+    it('renders showcase section in the page layout', async () => {
+      const element = await LoginPage();
+      render(element);
 
-      mockGetShowcasedWebsites.mockReturnValue(loadingPromise);
-
-      render(<LoginPage />);
-
-      // Should show loading skeletons (animated placeholders)
-      const skeletons = document.querySelectorAll('.animate-pulse');
-      expect(skeletons.length).toBeGreaterThan(0);
-
-      // Resolve the promise
-      resolvePromise!(createMockPaginatedResult(3));
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
-      });
+      expect(screen.getByTestId('showcase-preview-mock')).toBeInTheDocument();
     });
 
-    /**
-     * Tests that 6 loading skeleton placeholders are shown
-     * Validates: Requirement 9.3
-     */
-    it('shows 6 loading skeleton placeholders', async () => {
-      let resolvePromise: (value: PaginatedResult<ShowcasedWebsite>) => void;
-      const loadingPromise = new Promise<PaginatedResult<ShowcasedWebsite>>((resolve) => {
-        resolvePromise = resolve;
-      });
+    it('renders up to 6 showcase items when ShowcasePreviewServer fetches data', async () => {
+      // Test the ShowcasePreviewServer component directly by importing and awaiting it
+      const { ShowcasePreviewServer: ActualShowcasePreviewServer } = await vi.importActual<typeof import('@/components/ShowcasePreviewServer')>('@/components/ShowcasePreviewServer');
 
-      mockGetShowcasedWebsites.mockReturnValue(loadingPromise);
-
-      render(<LoginPage />);
-
-      // Find the Community Showcase section during loading
-      const heading = screen.getByRole('heading', { name: /community showcase/i });
-      const section = heading.closest('section');
-
-      // Should have 6 skeleton items
-      const skeletonItems = section!.querySelectorAll('.animate-pulse');
-      expect(skeletonItems.length).toBe(6);
-
-      // Resolve the promise to clean up
-      resolvePromise!(createMockPaginatedResult(3));
-    });
-  });
-
-  describe('Empty State', () => {
-    /**
-     * Tests that empty state is displayed when no websites exist
-     * Validates: Requirement 9.3
-     */
-    it('displays empty state when no showcased websites', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue({
-        items: [],
-        totalCount: 0,
-        page: 1,
-        pageSize: 6,
-        totalPages: 0,
-      });
-
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/be the first to share/i)).toBeInTheDocument();
-      });
-
-      // Should show call to action message
-      expect(screen.getByText(/share your creation/i)).toBeInTheDocument();
-    });
-
-    /**
-     * Tests that GlobeIcon placeholder is shown in empty state
-     * Validates: Requirements 9.2, 9.3
-     */
-    it('displays GlobeIcon in empty state message', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue({
-        items: [],
-        totalCount: 0,
-        page: 1,
-        pageSize: 6,
-        totalPages: 0,
-      });
-
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/be the first to share/i)).toBeInTheDocument();
-      });
-
-      // Find the Community Showcase section
-      const heading = screen.getByRole('heading', { name: /community showcase/i });
-      const section = heading.closest('section');
-
-      // Should have GlobeIcon with aria-hidden
-      const svgIcons = section!.querySelectorAll('svg[aria-hidden="true"]');
-      expect(svgIcons.length).toBeGreaterThan(0);
-    });
-  });
-
-  describe('Website Cards', () => {
-    /**
-     * Tests that website cards link to the correct public view page
-     * Validates: Requirement 9.3
-     */
-    it('website cards link to public view page', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue({
-        items: [createMockShowcasedWebsite('test-id-123')],
-        totalCount: 1,
-        page: 1,
-        pageSize: 6,
-        totalPages: 1,
-      });
-
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Website test-id-123')).toBeInTheDocument();
-      });
-
-      const link = screen.getByRole('link', { name: /test website test-id-123/i });
-      expect(link).toHaveAttribute('href', '/view/test-id-123');
-      expect(link).toHaveAttribute('target', '_blank');
-      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-    });
-
-    /**
-     * Tests that thumbnails are rendered with correct alt text
-     * Validates: Requirement 9.3
-     */
-    it('renders thumbnails with correct alt text', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue({
-        items: [createMockShowcasedWebsite('thumb-test', { title: 'My Cool Website' })],
-        totalCount: 1,
-        page: 1,
-        pageSize: 6,
-        totalPages: 1,
-      });
-
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('My Cool Website')).toBeInTheDocument();
-      });
-
-      const thumbnail = screen.getByAltText('Preview of My Cool Website');
-      expect(thumbnail).toBeInTheDocument();
-      expect(thumbnail).toHaveAttribute('src', 'data:image/png;base64,thumbnail-thumb-test');
-    });
-
-    /**
-     * Tests that placeholder icon is shown when website has no thumbnail
-     * Validates: Requirement 9.3
-     */
-    it('renders GlobeIcon placeholder when website has no thumbnail', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue({
-        items: [createMockShowcasedWebsite('no-thumb', { thumbnailUrl: '' })],
-        totalCount: 1,
-        page: 1,
-        pageSize: 6,
-        totalPages: 1,
-      });
-
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Test Website no-thumb')).toBeInTheDocument();
-      });
-
-      // Find the website card with placeholder
-      const link = screen.getByRole('link', { name: /test website no-thumb/i });
-      const placeholder = link.querySelector('svg[aria-hidden="true"]');
-      expect(placeholder).toBeInTheDocument();
-    });
-
-    /**
-     * Tests that creator name is displayed
-     * Validates: Requirement 9.3
-     */
-    it('displays creator name for each website', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue({
-        items: [createMockShowcasedWebsite('creator-test', { creatorName: 'John Doe' })],
-        totalCount: 1,
-        page: 1,
-        pageSize: 6,
-        totalPages: 1,
-      });
-
-      render(<LoginPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/by john doe/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Navigation', () => {
-    /**
-     * Tests that View All link points to showcase page
-     * Validates: Requirement 9.3
-     */
-    it('has View All link to showcase page', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue(
-        createMockPaginatedResult(3)
+      const mockItems = Array.from({ length: 6 }, (_, i) =>
+        createMockShowcaseItem(`item-${i + 1}`)
       );
+      mockGetShowcasePreviewServer.mockResolvedValue(mockItems);
 
-      render(<LoginPage />);
+      const element = await ActualShowcasePreviewServer();
+      render(element);
 
-      await waitFor(() => {
-        expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
-      });
+      // All 6 website titles should be visible
+      for (let i = 1; i <= 6; i++) {
+        expect(screen.getByText(`Website item-${i}`)).toBeInTheDocument();
+      }
+    });
+
+    it('renders creator names for each showcase item', async () => {
+      const { ShowcasePreviewServer: ActualShowcasePreviewServer } = await vi.importActual<typeof import('@/components/ShowcasePreviewServer')>('@/components/ShowcasePreviewServer');
+
+      const mockItems = [
+        createMockShowcaseItem('1', { creatorName: 'Alice' }),
+        createMockShowcaseItem('2', { creatorName: 'Bob' }),
+      ];
+      mockGetShowcasePreviewServer.mockResolvedValue(mockItems);
+
+      const element = await ActualShowcasePreviewServer();
+      render(element);
+
+      expect(screen.getByText('by Alice')).toBeInTheDocument();
+      expect(screen.getByText('by Bob')).toBeInTheDocument();
+    });
+
+    it('renders the Community Showcase section heading', async () => {
+      const { ShowcasePreviewServer: ActualShowcasePreviewServer } = await vi.importActual<typeof import('@/components/ShowcasePreviewServer')>('@/components/ShowcasePreviewServer');
+
+      mockGetShowcasePreviewServer.mockResolvedValue([createMockShowcaseItem('1')]);
+
+      const element = await ActualShowcasePreviewServer();
+      render(element);
+
+      expect(screen.getByRole('heading', { name: /community showcase/i })).toBeInTheDocument();
+    });
+
+    it('renders a View All link to the showcase page', async () => {
+      const { ShowcasePreviewServer: ActualShowcasePreviewServer } = await vi.importActual<typeof import('@/components/ShowcasePreviewServer')>('@/components/ShowcasePreviewServer');
+
+      mockGetShowcasePreviewServer.mockResolvedValue([createMockShowcaseItem('1')]);
+
+      const element = await ActualShowcasePreviewServer();
+      render(element);
 
       const viewAllLink = screen.getByRole('link', { name: /view all/i });
       expect(viewAllLink).toHaveAttribute('href', '/showcase');
     });
   });
 
-  describe('Section Header', () => {
-    /**
-     * Tests that section header displays correctly
-     * Validates: Requirement 9.3
-     */
-    it('displays Community Showcase section heading', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue(
-        createMockPaginatedResult(3)
-      );
+  describe('Showcase Preview - Failure (Requirement 2.5)', () => {
+    it('shows empty state message when fetch fails', async () => {
+      const { ShowcasePreviewServer: ActualShowcasePreviewServer } = await vi.importActual<typeof import('@/components/ShowcasePreviewServer')>('@/components/ShowcasePreviewServer');
 
-      render(<LoginPage />);
+      mockGetShowcasePreviewServer.mockRejectedValue(new Error('Network error'));
 
-      await waitFor(() => {
-        expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
-      });
+      const element = await ActualShowcasePreviewServer();
+      render(element);
 
-      expect(screen.getByRole('heading', { name: /community showcase/i })).toBeInTheDocument();
+      expect(screen.getByText(/could not be loaded/i)).toBeInTheDocument();
     });
 
-    /**
-     * Tests that section has proper semantic structure
-     * Validates: Requirement 9.3
-     */
-    it('wraps content in section element', async () => {
-      mockGetShowcasedWebsites.mockResolvedValue(
-        createMockPaginatedResult(3)
-      );
+    it('does not fail the entire page render on fetch failure', async () => {
+      // For the full page, ShowcasePreviewServer is mocked, so the page still renders
+      mockShowcaseContent = <div data-testid="showcase-fallback">Empty state</div>;
 
-      render(<LoginPage />);
+      const element = await LoginPage();
+      render(element);
 
-      await waitFor(() => {
-        expect(screen.getByText('Test Website website-1')).toBeInTheDocument();
+      // Hero section still renders
+      expect(screen.getByRole('heading', { level: 1, name: /ai website generator/i })).toBeInTheDocument();
+      // Features still render
+      expect(screen.getByText('Text to Website')).toBeInTheDocument();
+      // Showcase section renders (mocked, but present)
+      expect(screen.getByTestId('showcase-fallback')).toBeInTheDocument();
+    });
+
+    it('shows empty state when no websites are returned', async () => {
+      const { ShowcasePreviewServer: ActualShowcasePreviewServer } = await vi.importActual<typeof import('@/components/ShowcasePreviewServer')>('@/components/ShowcasePreviewServer');
+
+      mockGetShowcasePreviewServer.mockResolvedValue([]);
+
+      const element = await ActualShowcasePreviewServer();
+      render(element);
+
+      expect(screen.getByText(/be the first to share/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('AuthCard - Sign-in and Errors (Requirement 2.2)', () => {
+    it('renders the sign-in button', async () => {
+      const element = await LoginPage();
+      render(element);
+
+      expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument();
+    });
+
+    it('renders the sign-in heading', async () => {
+      const element = await LoginPage();
+      render(element);
+
+      expect(screen.getByText(/sign in to get started/i)).toBeInTheDocument();
+    });
+
+    it('displays auth error when sign-in fails', async () => {
+      mockSignInWithGoogle.mockRejectedValue(new Error('Auth failed'));
+
+      const element = await LoginPage();
+      render(element);
+
+      // Click sign-in
+      const button = screen.getByRole('button', { name: /sign in with google/i });
+      await act(async () => {
+        fireEvent.click(button);
       });
 
-      const heading = screen.getByRole('heading', { name: /community showcase/i });
-      expect(heading.closest('section')).toBeInTheDocument();
+      // Error should appear
+      const errorAlert = await screen.findByRole('alert');
+      expect(errorAlert).toBeInTheDocument();
+      expect(screen.getByText('Auth failed')).toBeInTheDocument();
+    });
+
+    it('allows dismissing auth errors', async () => {
+      mockSignInWithGoogle.mockRejectedValue(new Error('Dismissed error'));
+
+      const element = await LoginPage();
+      render(element);
+
+      // Trigger error
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /sign in with google/i }));
+      });
+
+      // Wait for error
+      const errorAlert = await screen.findByRole('alert');
+      expect(errorAlert).toBeInTheDocument();
+
+      // Dismiss error
+      const dismissButton = screen.getByRole('button', { name: /dismiss error/i });
+      fireEvent.click(dismissButton);
+
+      expect(mockClearError).toHaveBeenCalled();
     });
   });
 });

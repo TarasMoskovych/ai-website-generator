@@ -43,7 +43,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Assert: when `cacheAge >= 86400` → decision is `'attempt-fresh'`
     - Minimum 100 iterations
 
-- [ ] 2. Convert Showcase Page to server-side rendering
+- [x] 2. Convert Showcase Page to server-side rendering
   - [x] 2.1 Create server-rendered Showcase page component
     - Rewrite `src/app/showcase/page.tsx` as an async server component (remove `'use client'` directive)
     - Call `getShowcasedWebsitesServer(1, 12)` for initial data
@@ -67,7 +67,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Render error message and retry button that calls `reset()`
     - _Requirements: 1.5_
 
-  - [~] 2.4 Write unit tests for Showcase page server component
+  - [x] 2.4 Write unit tests for Showcase page server component
     - Create `src/app/showcase/page.test.tsx`
     - Test that metadata export contains correct title and description
     - Test that the server component renders the website grid with mock data
@@ -78,7 +78,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
 - [~] 3. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Convert Login Page static content to server rendering
+- [x] 4. Convert Login Page static content to server rendering
   - [x] 4.1 Rewrite Login page as a mixed server/client component
     - Rewrite `src/app/page.tsx` as an async server component (remove `'use client'` directive)
     - Server-render the hero section (logo, title, description), features grid, and footer as static HTML
@@ -99,7 +99,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - On fetch failure, render an empty state section (not an error page)
     - _Requirements: 2.3, 2.5_
 
-  - [~] 4.4 Write unit tests for Login page server sections
+  - [x] 4.4 Write unit tests for Login page server sections
     - Update `src/app/page.test.tsx`
     - Test hero section renders title, description, and logo without JS
     - Test features grid renders three feature cards
@@ -116,7 +116,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - The inner content remains a client component (`DashboardContent`) that uses `useAuth()` and `useWebsites()` hooks
     - _Requirements: 3.1, 3.2_
 
-  - [~] 5.2 Create `DashboardSkeleton` loading component
+  - [x] 5.2 Create `DashboardSkeleton` loading component
     - Create `src/app/dashboard/DashboardSkeleton.tsx`
     - Render a grid of placeholder skeleton cards matching the dashboard layout
     - Used as the Suspense fallback for immediate visual feedback
@@ -141,7 +141,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Keep `WebsitePageContent` as a `'use client'` component with all existing interactive logic
     - _Requirements: 3.4, 3.5_
 
-  - [~] 6.2 Create `PreviewSkeleton` loading component
+  - [x] 6.2 Create `PreviewSkeleton` loading component
     - Create `src/app/website/[id]/PreviewSkeleton.tsx`
     - Render skeleton placeholders for the editor and preview panels
     - Used as the Suspense fallback
