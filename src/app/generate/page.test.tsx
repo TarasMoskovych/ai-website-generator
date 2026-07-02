@@ -9,12 +9,14 @@
  * - Error handling
  * - Cancel functionality
  *
- * Validates: Requirements 10.1, 10.3, 13.1
+ * Validates: Requirements 10.1, 10.3, 13.1, 3.7
  */
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import GeneratePage from './page';
 
 // Mock next/navigation
@@ -825,6 +827,65 @@ describe('Generate Page Integration Tests', () => {
 
       // Generate button should be labeled
       expect(screen.getByRole('button', { name: /generate website/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('Client-Only Directive Smoke Test', () => {
+    /**
+     * Smoke test: Confirms the Generate page retains 'use client' directive
+     * and does not introduce server-side data fetching.
+     * Validates: Requirement 3.7
+     */
+    it('has \'use client\' directive at the top of the source file', () => {
+      const filePath = resolve(__dirname, 'page.tsx');
+      const source = readFileSync(filePath, 'utf-8');
+      const lines = source.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+      // The 'use client' directive must appear as the first non-comment, non-empty statement
+      // Skip leading block comments (/** ... */)
+      let directiveFound = false;
+      let inBlockComment = false;
+      for (const line of lines) {
+        if (inBlockComment) {
+          if (line.includes('*/')) {
+            inBlockComment = false;
+          }
+          continue;
+        }
+        if (line.startsWith('/*') || line.startsWith('/**')) {
+          if (!line.includes('*/')) {
+            inBlockComment = true;
+          }
+          continue;
+        }
+        if (line.startsWith('//')) {
+          continue;
+        }
+        // First non-comment line should be 'use client'
+        directiveFound = line === "'use client';" || line === '"use client";';
+        break;
+      }
+
+      expect(directiveFound).toBe(true);
+    });
+
+    it('does not import server-side data fetching APIs', () => {
+      const filePath = resolve(__dirname, 'page.tsx');
+      const source = readFileSync(filePath, 'utf-8');
+
+      // These are server-only APIs that should NOT be present in a client component
+      const serverOnlyImports = [
+        'unstable_cache',
+        'firebase-admin',
+        'getFirestore',
+        'import { cache }',
+        "'use server'",
+        '"use server"',
+      ];
+
+      for (const serverImport of serverOnlyImports) {
+        expect(source).not.toContain(serverImport);
+      }
     });
   });
 });

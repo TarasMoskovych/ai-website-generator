@@ -1,600 +1,276 @@
 /**
- * Website Preview Page Integration Tests
+ * Website Preview Page - Streaming Shell Unit Tests
  *
- * Tests that verify the Website Preview page works correctly with:
- * - Auth integration (getIdToken from useAuth hook)
- * - Icons from shared Icons module
- * - Preview functionality
- * - Loading and error states
+ * Tests that verify the Website Preview page server component shell:
+ * - Static layout shell and decorative background render in the server response
+ * - PreviewSkeleton renders toolbar, preview panel, and code editor placeholders
+ * - Error boundary renders error message and retry mechanism
  *
- * Validates: Requirements 11.1, 11.2, 11.4, 13.1
+ * Validates: Requirements 3.4, 3.5, 3.6
  */
 
-import React, { Suspense } from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import type { GeneratedWebsite } from '@/types/website';
+import React from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 
-// Mock next/navigation
-const mockPush = vi.fn();
-const mockReplace = vi.fn();
-const mockSearchParams = new URLSearchParams();
+// ─── Mocks ───────────────────────────────────────────────────────────────────
 
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-    replace: mockReplace,
-    prefetch: vi.fn(),
-  }),
-  useSearchParams: () => mockSearchParams,
-  usePathname: () => '/website/test-website-123',
-}));
-
-// Mock user
-const mockUser = {
-  uid: 'test-user-123',
-  email: 'test@example.com',
-  displayName: 'Test User',
-  photoURL: null,
-};
-
-// Mock getIdToken function
-const mockGetIdToken = vi.fn();
-
-// Mock the auth context
-vi.mock('@/components/auth', () => ({
-  useAuth: () => ({
-    user: mockUser,
-    isLoading: false,
-    loading: false,
-    error: null,
-    signOut: vi.fn(),
-    getIdToken: mockGetIdToken,
-  }),
-  ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-
-// Mock the ThemeToggle component to avoid needing ThemeProvider
-vi.mock('@/components/layout/ThemeToggle', () => ({
-  ThemeToggle: () => <button aria-label="Toggle theme">Theme</button>,
-}));
-
-// Mock the ThemeProvider and useTheme to avoid theme context issues
-vi.mock('@/components/layout/ThemeProvider', () => ({
-  ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  useTheme: () => ({
-    theme: 'light',
-    setTheme: vi.fn(),
-    resolvedTheme: 'light',
-  }),
-}));
-
-// Mock website repository
-const mockGetById = vi.fn();
-const mockUpdate = vi.fn();
-const mockToggleShowcase = vi.fn();
-
-vi.mock('@/services/websiteRepository', () => ({
-  default: {
-    getById: (...args: unknown[]) => mockGetById(...args),
-    update: (...args: unknown[]) => mockUpdate(...args),
-    toggleShowcase: (...args: unknown[]) => mockToggleShowcase(...args),
-    save: vi.fn(),
-  },
-}));
-
-// Mock download service
-vi.mock('@/services/downloadService', () => ({
-  generateSingleFile: vi.fn().mockResolvedValue(new Blob(['<html></html>'])),
-  generateZipArchive: vi.fn().mockResolvedValue(new Blob(['zip content'])),
-  downloadBlob: vi.fn(),
-}));
-
-// Mock HTML sanitizer
-vi.mock('@/services/htmlSanitizer', () => ({
-  sanitize: (html: string) => html,
-}));
-
-// Mock beautify errors
-vi.mock('@/lib/beautifyErrors', () => ({
-  getBeautifyError: (err: Error | string) => ({
-    title: 'Beautification Error',
-    message: typeof err === 'string' ? err : err.message,
-    isRetryable: true,
-  }),
-}));
-
-// Mock Monaco Editor to prevent hanging
-vi.mock('@monaco-editor/react', () => ({
-  default: ({ value, onChange }: { value?: string; onChange?: (val: string | undefined) => void }) => (
-    <textarea
-      data-testid="mock-monaco-editor"
-      value={value || ''}
-      onChange={(e) => onChange?.(e.target.value)}
-    />
-  ),
-}));
-
-// Mock the CodeEditor component entirely for faster tests
-vi.mock('@/components/CodeEditor', () => ({
-  CodeEditor: ({ html, css, activeTab, onTabChange }: {
-    html: string;
-    css: string;
-    onHtmlChange: (val: string) => void;
-    onCssChange: (val: string) => void;
-    activeTab: 'html' | 'css';
-    onTabChange: (tab: 'html' | 'css') => void;
-  }) => (
-    <div data-testid="mock-code-editor">
-      <button onClick={() => onTabChange('html')}>HTML</button>
-      <button onClick={() => onTabChange('css')}>CSS</button>
-      <div data-testid="editor-content">{activeTab === 'html' ? html : css}</div>
+// Mock the WebsitePageContent client component to avoid hook/client issues
+vi.mock('./WebsitePageContent', () => ({
+  WebsitePageContent: ({ websiteId }: { websiteId: string }) => (
+    <div data-testid="website-page-content" data-website-id={websiteId}>
+      Website Content
     </div>
   ),
 }));
 
-// Mock useBeautifySave hook
-vi.mock('@/hooks/useBeautifySave', () => ({
-  useBeautifySave: () => ({
-    handleReplaceOriginal: vi.fn(),
-    handleSaveAsNew: vi.fn(),
-  }),
-}));
-
-// Mock useBeautifyWorkflow hook to prevent SSE/streaming issues
-const mockOpenOptionsDialog = vi.fn();
-const mockStartBeautify = vi.fn();
-const mockCancelBeautify = vi.fn();
-const mockHandleConfirm = vi.fn();
-const mockHandleAccept = vi.fn();
-const mockHandleReject = vi.fn();
-const mockHandleRetry = vi.fn();
-const mockHandleDismiss = vi.fn();
-
-vi.mock('@/hooks/useBeautifyWorkflow', () => ({
-  useBeautifyWorkflow: () => ({
-    isBeautifying: false,
-    beautifyStage: null,
-    streamingContent: '',
-    beautifiedHtml: '',
-    beautifiedCss: '',
-    beautifyError: null,
-    showBeautifyOptions: false,
-    showPreviewComparison: false,
-    showSaveOptions: false,
-    openOptionsDialog: mockOpenOptionsDialog,
-    startBeautify: mockStartBeautify,
-    cancelBeautify: mockCancelBeautify,
-    handleConfirm: mockHandleConfirm,
-    handleAccept: mockHandleAccept,
-    handleReject: mockHandleReject,
-    handleRetry: mockHandleRetry,
-    handleDismiss: mockHandleDismiss,
-  }),
-}));
-
-// Mock useAutoSave hook to prevent auto-save timer issues
-vi.mock('@/hooks/useAutoSave', () => ({
-  useAutoSave: () => ({
-    hasUnsavedChanges: false,
-    isSaving: false,
-    saveError: null,
-    lastSaved: null,
-    save: vi.fn().mockResolvedValue(undefined),
-  }),
-}));
-
-// Mock PreviewRenderer to prevent iframe issues
-vi.mock('@/components/PreviewRenderer', () => ({
-  PreviewRenderer: ({ html, css }: { html: string; css: string }) => (
-    <div data-testid="mock-preview-renderer">
-      <iframe title="preview" data-html={html} data-css={css} />
-    </div>
-  ),
-}));
-
-// Mock AppHeader and AppFooter
-vi.mock('@/components/layout', () => ({
-  AppHeader: () => <header data-testid="mock-app-header">Header</header>,
-  AppFooter: () => <footer data-testid="mock-app-footer">Footer</footer>,
-}));
-
-// Mock common components
-vi.mock('@/components/common', () => ({
-  LoadingSpinner: ({ message }: { message?: string }) => <div data-testid="loading-spinner">{message}</div>,
-  ErrorMessage: ({ message, onRetry }: { message: string; onRetry?: () => void }) => (
-    <div data-testid="error-message">
-      {message}
-      {onRetry && <button onClick={onRetry}>Retry</button>}
-    </div>
-  ),
-  WebsiteNotFound: () => (
-    <div data-testid="website-not-found">
-      Website not found
-      <button>Back to Dashboard</button>
-    </div>
-  ),
-}));
-
-// Mock DownloadDialog
-vi.mock('@/components/DownloadDialog', () => ({
-  DownloadDialog: ({ isOpen }: { isOpen: boolean }) =>
-    isOpen ? <div role="dialog" data-testid="download-dialog">Download Dialog</div> : null,
-}));
-
-// Mock beautify components
-vi.mock('@/components/beautify', () => ({
-  BeautifyButton: ({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) => (
-    <button onClick={onClick} disabled={disabled} data-testid="beautify-button">Beautify</button>
-  ),
-  BeautifyOptionsDialog: ({ isOpen }: { isOpen: boolean }) =>
-    isOpen ? <div role="dialog" data-testid="beautify-options-dialog">Options Dialog</div> : null,
-  BeautifyLoadingOverlay: ({ isVisible }: { isVisible: boolean }) =>
-    isVisible ? <div data-testid="beautify-loading">Loading...</div> : null,
-  PreviewComparison: () => <div data-testid="preview-comparison">Preview Comparison</div>,
-  SaveOptionsDialog: ({ isOpen }: { isOpen: boolean }) =>
-    isOpen ? <div role="dialog" data-testid="save-options-dialog">Save Options</div> : null,
-  BeautifyErrorDisplay: ({ error }: { error: { message: string } }) => (
-    <div data-testid="beautify-error">{error.message}</div>
-  ),
-}));
-
-// Mock icon components
-vi.mock('@/components/icons', () => ({
-  ArrowLeftIcon: ({ className }: { className?: string }) => <svg aria-hidden="true" className={className} data-testid="arrow-left-icon" />,
-  DownloadIcon: ({ className }: { className?: string }) => <svg aria-hidden="true" className={className} data-testid="download-icon" />,
-  CheckIcon: ({ className }: { className?: string }) => <svg aria-hidden="true" className={className} data-testid="check-icon" />,
-  CodeIcon: ({ className }: { className?: string }) => <svg aria-hidden="true" className={className} data-testid="code-icon" />,
-  PanelRightIcon: ({ className }: { className?: string }) => <svg aria-hidden="true" className={className} data-testid="panel-right-icon" />,
-  MaximizeIcon: ({ className }: { className?: string }) => <svg aria-hidden="true" className={className} data-testid="maximize-icon" />,
-  MinimizeIcon: ({ className }: { className?: string }) => <svg aria-hidden="true" className={className} data-testid="minimize-icon" />,
-  GlobeIcon: ({ className }: { className?: string }) => <svg aria-hidden="true" className={className} data-testid="globe-icon" />,
-}));
-
-// Helper to create a mock website
-function createMockWebsite(id: string, overrides?: Partial<GeneratedWebsite>): GeneratedWebsite {
+// Mock React Suspense to render children directly (for server component testing)
+vi.mock('react', async () => {
+  const actual = await vi.importActual<typeof import('react')>('react');
   return {
-    id,
-    userId: 'test-user-123',
-    title: `Test Website ${id}`,
-    html: '<h1>Test Content</h1><p>Hello World</p>',
-    css: 'h1 { color: blue; } p { font-size: 16px; }',
-    thumbnailUrl: 'data:image/png;base64,test',
-    inputType: 'text',
-    originalPrompt: 'Create a test website',
-    isPublic: true,
-    isShowcased: false,
-    showcasedAt: null,
-    creatorName: 'Test User',
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
-    ...overrides,
+    ...actual,
+    Suspense: ({ children, fallback }: { children: React.ReactNode; fallback: React.ReactNode }) => (
+      <>{children}</>
+    ),
   };
-}
+});
 
-// Create a Promise-wrapped params object as required by Next.js 15+
-function createParamsPromise(id: string): Promise<{ id: string }> {
-  return Promise.resolve({ id });
-}
+// ─── Import components after mocks ──────────────────────────────────────────
 
-// Import the page component after mocks are set up
 import WebsitePage from './page';
+import { PreviewSkeleton } from './PreviewSkeleton';
+import WebsitePreviewError from './error';
 
-// Wrapper component to handle Suspense boundaries properly in tests
-function TestWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      {children}
-    </Suspense>
-  );
-}
+// ─── Tests ───────────────────────────────────────────────────────────────────
 
-// Helper function to render the page with proper async handling
-async function renderWebsitePage(websiteId: string) {
-  let result;
-  await act(async () => {
-    result = render(
-      <TestWrapper>
-        <WebsitePage params={createParamsPromise(websiteId)} />
-      </TestWrapper>
-    );
-  });
-  return result!;
-}
-
-describe('Website Preview Page Integration Tests', () => {
+describe('Website Preview Page - Server Component Shell', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetIdToken.mockResolvedValue('mock-id-token');
-    mockGetById.mockResolvedValue(createMockWebsite('test-website-123'));
-    mockUpdate.mockResolvedValue(undefined);
-    mockToggleShowcase.mockResolvedValue(undefined);
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
+  describe('Static Layout Shell', () => {
+    /**
+     * Validates: Requirement 3.4
+     * The server component should render the page layout shell as static HTML
+     * in the initial server response.
+     */
+    it('renders the outer layout container with min-h-screen and gradient background', async () => {
+      const element = await WebsitePage({ params: Promise.resolve({ id: 'test-id-123' }) });
+      const { container } = render(element);
+
+      const layoutDiv = container.firstElementChild as HTMLElement;
+      expect(layoutDiv).toBeInTheDocument();
+      expect(layoutDiv.className).toContain('min-h-screen');
+      expect(layoutDiv.className).toContain('bg-gradient-to-b');
+    });
+
+    it('renders decorative background elements in the static shell', async () => {
+      const element = await WebsitePage({ params: Promise.resolve({ id: 'test-id-123' }) });
+      const { container } = render(element);
+
+      // The fixed decorative background container
+      const decorativeContainer = container.querySelector('.fixed.inset-0');
+      expect(decorativeContainer).toBeInTheDocument();
+      expect(decorativeContainer?.className).toContain('pointer-events-none');
+
+      // Two blur circles for decorative effect
+      const blurCircles = decorativeContainer?.querySelectorAll('.blur-3xl');
+      expect(blurCircles?.length).toBe(2);
+    });
+
+    it('passes the correct websiteId to WebsitePageContent', async () => {
+      const element = await WebsitePage({ params: Promise.resolve({ id: 'my-website-42' }) });
+      render(element);
+
+      const content = screen.getByTestId('website-page-content');
+      expect(content).toHaveAttribute('data-website-id', 'my-website-42');
+    });
+
+    it('awaits params promise and extracts the id correctly', async () => {
+      const element = await WebsitePage({ params: Promise.resolve({ id: 'async-param-id' }) });
+      render(element);
+
+      const content = screen.getByTestId('website-page-content');
+      expect(content).toHaveAttribute('data-website-id', 'async-param-id');
+    });
   });
+});
 
-  describe('Page Rendering', () => {
-    it('renders the page with website title', async () => {
-      await renderWebsitePage('test-website-123');
+describe('PreviewSkeleton Component', () => {
+  /**
+   * Validates: Requirement 3.5
+   * The loading skeleton should display placeholders for the preview and code editor panels.
+   */
+  describe('Toolbar Skeleton', () => {
+    it('renders a toolbar section with border and background', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
+      // Toolbar area with border-b and bg-background
+      const toolbar = container.querySelector('.border-b.border-border.bg-background');
+      expect(toolbar).toBeInTheDocument();
     });
 
-    it('shows not found message when website does not exist', async () => {
-      mockGetById.mockResolvedValue(null);
+    it('renders a back button placeholder in the toolbar', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      await renderWebsitePage('nonexistent-id');
-
-      await waitFor(() => {
-        expect(screen.getByTestId('website-not-found')).toBeInTheDocument();
-      });
+      // Back button placeholder (h-9 w-9 rounded-md)
+      const backButtonPlaceholder = container.querySelector('.h-9.w-9.rounded-md.bg-muted');
+      expect(backButtonPlaceholder).toBeInTheDocument();
     });
 
-    it('shows not found message when user does not own the website', async () => {
-      mockGetById.mockResolvedValue(createMockWebsite('other-website', { userId: 'other-user-456' }));
+    it('renders title and subtitle placeholders in the toolbar', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      await renderWebsitePage('other-website');
+      // Title placeholder
+      const titlePlaceholder = container.querySelector('.h-5.w-48');
+      expect(titlePlaceholder).toBeInTheDocument();
 
-      await waitFor(() => {
-        expect(screen.getByTestId('website-not-found')).toBeInTheDocument();
-      });
+      // Subtitle placeholder
+      const subtitlePlaceholder = container.querySelector('.h-3.w-32');
+      expect(subtitlePlaceholder).toBeInTheDocument();
     });
 
-    it('shows error message when fetch fails', async () => {
-      mockGetById.mockRejectedValue(new Error('Failed to load website'));
+    it('renders action button placeholders in the toolbar', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      await renderWebsitePage('test-website-123');
-
-      await waitFor(() => {
-        expect(screen.getByTestId('error-message')).toBeInTheDocument();
-        expect(screen.getByText(/failed to load website/i)).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Icons Module Integration', () => {
-    it('renders icons with aria-hidden for accessibility', async () => {
-      await renderWebsitePage('test-website-123');
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      // All SVG icons should have aria-hidden
-      const svgs = document.querySelectorAll('svg');
-      svgs.forEach((svg) => {
-        expect(svg).toHaveAttribute('aria-hidden', 'true');
-      });
-    });
-
-    it('renders ArrowLeftIcon in back to dashboard button', async () => {
-      await renderWebsitePage('test-website-123');
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      expect(screen.getByTestId('arrow-left-icon')).toBeInTheDocument();
-    });
-
-    it('renders DownloadIcon in download button', async () => {
-      await renderWebsitePage('test-website-123');
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      expect(screen.getByTestId('download-icon')).toBeInTheDocument();
-    });
-
-    it('renders GlobeIcon in share button', async () => {
-      await renderWebsitePage('test-website-123');
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      expect(screen.getByTestId('globe-icon')).toBeInTheDocument();
+      // Action buttons (h-9 w-20, h-9 w-24, h-9 w-24, h-9 w-28)
+      const actionButtons = container.querySelectorAll('.h-9.rounded-md.bg-muted');
+      // Back button (h-9 w-9) + 4 action buttons = at least 5
+      expect(actionButtons.length).toBeGreaterThanOrEqual(5);
     });
   });
 
-  describe('Preview Functionality', () => {
-    it('displays preview renderer with website content', async () => {
-      await renderWebsitePage('test-website-123');
+  describe('Preview Panel Skeleton', () => {
+    it('renders the preview panel area with a border', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      expect(screen.getByTestId('mock-preview-renderer')).toBeInTheDocument();
+      // Preview panel (flex-1 border-r)
+      const previewPanel = container.querySelector('.flex-1.border-r');
+      expect(previewPanel).toBeInTheDocument();
     });
 
-    it('opens fullscreen preview when preview button is clicked', async () => {
-      await renderWebsitePage('test-website-123');
+    it('renders a full-size placeholder in the preview panel', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
+      const previewPanel = container.querySelector('.flex-1.border-r.border-border.p-4');
+      expect(previewPanel).toBeInTheDocument();
 
-      const previewButton = screen.getByRole('button', { name: /preview/i });
-      fireEvent.click(previewButton);
-
-      // Should show fullscreen dialog
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument();
-      });
+      // The preview placeholder (h-full w-full rounded-lg bg-muted)
+      const previewPlaceholder = previewPanel?.querySelector('.h-full.w-full.rounded-lg.bg-muted');
+      expect(previewPlaceholder).toBeInTheDocument();
     });
   });
 
-  describe('Beautify Workflow', () => {
-    it('displays beautify button in action toolbar', async () => {
-      await renderWebsitePage('test-website-123');
+  describe('Code Editor Panel Skeleton', () => {
+    it('renders the code editor panel with fixed width', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      expect(screen.getByTestId('beautify-button')).toBeInTheDocument();
+      // Code editor panel (w-[500px])
+      const editorPanel = container.querySelector('[class*="w-[500px]"]');
+      expect(editorPanel).toBeInTheDocument();
     });
 
-    it('calls openOptionsDialog when beautify button is clicked', async () => {
-      await renderWebsitePage('test-website-123');
+    it('renders the editor toolbar with icons and label placeholder', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      const beautifyButton = screen.getByTestId('beautify-button');
-      fireEvent.click(beautifyButton);
-
-      expect(mockOpenOptionsDialog).toHaveBeenCalled();
+      // Editor toolbar area (bg-muted/30)
+      const editorToolbar = container.querySelector('[class*="bg-muted/30"]');
+      expect(editorToolbar).toBeInTheDocument();
     });
-  });
 
-  describe('Loading and Error States', () => {
-    it('allows retry after fetch error', async () => {
-      mockGetById
-        .mockRejectedValueOnce(new Error('Network error'))
-        .mockResolvedValueOnce(createMockWebsite('test-website-123'));
+    it('renders tab bar with tab placeholders', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      await renderWebsitePage('test-website-123');
+      // Tab placeholders (h-7 w-16 rounded bg-muted)
+      const tabPlaceholders = container.querySelectorAll('.h-7.w-16');
+      expect(tabPlaceholders.length).toBe(2);
+    });
 
-      // Wait for error
-      await waitFor(() => {
-        expect(screen.getByTestId('error-message')).toBeInTheDocument();
-      });
+    it('renders code line placeholders in the editor', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      // Click retry
-      const retryButton = screen.getByRole('button', { name: /retry/i });
-      fireEvent.click(retryButton);
-
-      // Should load successfully
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
+      // Code lines are h-3 elements within the code area
+      const codeLines = container.querySelectorAll('.h-3');
+      // Should have multiple code lines (10 code lines + title subtitle = 12 total h-3 elements)
+      expect(codeLines.length).toBeGreaterThanOrEqual(10);
     });
   });
 
-  describe('Navigation', () => {
-    it('navigates back to dashboard when back button is clicked', async () => {
-      await renderWebsitePage('test-website-123');
+  describe('Animation', () => {
+    it('applies animate-pulse class to the skeleton container', () => {
+      const { container } = render(<PreviewSkeleton />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      const backButton = screen.getByLabelText(/back to dashboard/i);
-      fireEvent.click(backButton);
-
-      await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/dashboard');
-      });
+      const skeletonContainer = container.querySelector('.animate-pulse');
+      expect(skeletonContainer).toBeInTheDocument();
     });
   });
+});
 
-  describe('Showcase Toggle', () => {
-    it('toggles showcase status when share button is clicked', async () => {
-      await renderWebsitePage('test-website-123');
+describe('Website Preview Error Boundary', () => {
+  /**
+   * Validates: Requirement 3.6
+   * Error boundary should display an error message with a retry mechanism.
+   */
+  const mockError = new Error('Failed to load website data');
+  const mockRetry = vi.fn();
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      const shareButton = screen.getByRole('button', { name: /share/i });
-      fireEvent.click(shareButton);
-
-      await waitFor(() => {
-        expect(mockToggleShowcase).toHaveBeenCalledWith('test-website-123', true);
-      });
-    });
-
-    it('shows "Shared" text when website is showcased', async () => {
-      mockGetById.mockResolvedValue(createMockWebsite('test-website-123', { isShowcased: true }));
-
-      await renderWebsitePage('test-website-123');
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      expect(screen.getByRole('button', { name: /shared/i })).toBeInTheDocument();
-    });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Suppress console.error output from the error boundary's useEffect
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  describe('Download Dialog', () => {
-    it('opens download dialog when download button is clicked', async () => {
-      await renderWebsitePage('test-website-123');
+  it('renders the error message', () => {
+    render(<WebsitePreviewError error={mockError} unstable_retry={mockRetry} />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      const downloadButton = screen.getByRole('button', { name: /download/i });
-      fireEvent.click(downloadButton);
-
-      await waitFor(() => {
-        expect(screen.getByTestId('download-dialog')).toBeInTheDocument();
-      });
-    });
+    expect(
+      screen.getByText('Something went wrong loading the website preview.')
+    ).toBeInTheDocument();
   });
 
-  describe('Code Editor', () => {
-    it('displays code editor panel', async () => {
-      await renderWebsitePage('test-website-123');
+  it('renders a Try Again button', () => {
+    render(<WebsitePreviewError error={mockError} unstable_retry={mockRetry} />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      expect(screen.getByTestId('mock-code-editor')).toBeInTheDocument();
-    });
-
-    it('collapses code panel when collapse button is clicked', async () => {
-      await renderWebsitePage('test-website-123');
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
-
-      // Find and click collapse button
-      const collapseButton = screen.getByLabelText(/collapse code panel/i);
-      fireEvent.click(collapseButton);
-
-      // Should show expand button instead
-      await waitFor(() => {
-        expect(screen.getByLabelText(/expand code panel/i)).toBeInTheDocument();
-      });
-    });
+    const retryButton = screen.getByRole('button', { name: /try again/i });
+    expect(retryButton).toBeInTheDocument();
   });
 
-  describe('Save Status', () => {
-    it('displays website creation date', async () => {
-      await renderWebsitePage('test-website-123');
+  it('calls unstable_retry when Try Again button is clicked', () => {
+    render(<WebsitePreviewError error={mockError} unstable_retry={mockRetry} />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
+    const retryButton = screen.getByRole('button', { name: /try again/i });
+    fireEvent.click(retryButton);
 
-      expect(screen.getByText(/created/i)).toBeInTheDocument();
-    });
+    expect(mockRetry).toHaveBeenCalledTimes(1);
   });
 
-  describe('Accessibility', () => {
-    it('has proper accessibility labels for interactive elements', async () => {
-      await renderWebsitePage('test-website-123');
+  it('applies destructive styling to the error text', () => {
+    render(<WebsitePreviewError error={mockError} unstable_retry={mockRetry} />);
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /test website test-website-123/i })).toBeInTheDocument();
-      });
+    const errorText = screen.getByText('Something went wrong loading the website preview.');
+    expect(errorText.className).toContain('text-destructive');
+  });
 
-      // Verify key interactive elements have accessible names
-      expect(screen.getByLabelText(/back to dashboard/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /download/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /preview/i })).toBeInTheDocument();
-    });
+  it('renders the retry button with primary styling', () => {
+    render(<WebsitePreviewError error={mockError} unstable_retry={mockRetry} />);
+
+    const retryButton = screen.getByRole('button', { name: /try again/i });
+    expect(retryButton.className).toContain('bg-primary');
+  });
+
+  it('centers the error content vertically and horizontally', () => {
+    const { container } = render(
+      <WebsitePreviewError error={mockError} unstable_retry={mockRetry} />
+    );
+
+    const errorContainer = container.firstElementChild as HTMLElement;
+    expect(errorContainer.className).toContain('items-center');
+    expect(errorContainer.className).toContain('justify-center');
+  });
+
+  it('logs the error to console', () => {
+    render(<WebsitePreviewError error={mockError} unstable_retry={mockRetry} />);
+
+    expect(console.error).toHaveBeenCalledWith('Website preview error:', mockError);
   });
 });

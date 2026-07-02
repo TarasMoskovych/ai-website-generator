@@ -108,7 +108,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Test AuthCard renders sign-in button and handles errors
     - _Requirements: 2.1, 2.2, 2.3, 2.5_
 
-- [ ] 5. Implement streaming with Suspense for Dashboard page
+- [x] 5. Implement streaming with Suspense for Dashboard page
   - [x] 5.1 Rewrite Dashboard page with server-rendered shell and Suspense
     - Rewrite `src/app/dashboard/page.tsx` as a server component (remove top-level `'use client'`)
     - Server-render: `AppHeader`, navigation, page heading, layout container, and `AppFooter` as static HTML in the initial response
@@ -128,13 +128,13 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Render error message with retry mechanism in the content area
     - _Requirements: 3.3_
 
-  - [~] 5.4 Write unit tests for Dashboard streaming shell
+  - [x] 5.4 Write unit tests for Dashboard streaming shell
     - Test that the static shell (header, nav, footer) renders in the server response
     - Test that DashboardSkeleton renders placeholder cards
     - Test error boundary renders retry mechanism
     - _Requirements: 3.1, 3.2, 3.3_
 
-- [ ] 6. Implement streaming with Suspense for Website Preview page
+- [x] 6. Implement streaming with Suspense for Website Preview page
   - [x] 6.1 Rewrite Website Preview page with server-rendered shell and Suspense
     - Rewrite `src/app/website/[id]/page.tsx` to render layout shell and toolbar as static HTML in the initial server response
     - Wrap the data-dependent content (`WebsitePageContent`) in `<Suspense fallback={<PreviewSkeleton />}>`
@@ -153,7 +153,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Render error message with retry mechanism
     - _Requirements: 3.6_
 
-  - [~] 6.4 Write unit tests for Website Preview streaming shell
+  - [x] 6.4 Write unit tests for Website Preview streaming shell
     - Test that the static layout shell and toolbar render in the server response
     - Test that PreviewSkeleton renders editor and preview placeholders
     - Test error boundary renders retry mechanism
@@ -163,7 +163,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 8. Verify Generate Page remains client-only and ensure feature parity
-  - [~] 8.1 Confirm Generate Page retains `'use client'` directive
+  - [x] 8.1 Confirm Generate Page retains `'use client'` directive
     - Verify `src/app/generate/page.tsx` still has `'use client'` at the top
     - Ensure no server-side data fetching is introduced
     - Add a smoke test confirming the directive is present
