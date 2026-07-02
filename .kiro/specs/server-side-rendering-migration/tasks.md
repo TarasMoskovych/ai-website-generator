@@ -53,7 +53,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Keep empty state and error handling (try/catch around the fetch, render error UI with retry button on failure)
     - _Requirements: 1.1, 1.2, 1.4, 1.5, 6.1_
 
-  - [~] 2.2 Extract `ShowcasePagination` client component
+  - [x] 2.2 Extract `ShowcasePagination` client component
     - Create `src/app/showcase/ShowcasePagination.tsx` with `'use client'` directive
     - Accept `ShowcasePaginationProps` (initialPage, initialTotalPages, initialTotalCount, pageSize)
     - Implement client-side page fetching using existing `useShowcaseWebsites` hook for subsequent pages
@@ -61,7 +61,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Display skeleton cards (`WebsiteCardSkeleton`) while loading a new page
     - _Requirements: 1.3, 1.6, 5.1_
 
-  - [~] 2.3 Create `src/app/showcase/error.tsx` error boundary
+  - [x] 2.3 Create `src/app/showcase/error.tsx` error boundary
     - Add `'use client'` directive
     - Accept `error` and `reset` props
     - Render error message and retry button that calls `reset()`
@@ -79,14 +79,14 @@ This plan migrates the AI Website Generator from client-side rendering to server
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Convert Login Page static content to server rendering
-  - [~] 4.1 Rewrite Login page as a mixed server/client component
+  - [x] 4.1 Rewrite Login page as a mixed server/client component
     - Rewrite `src/app/page.tsx` as an async server component (remove `'use client'` directive)
     - Server-render the hero section (logo, title, description), features grid, and footer as static HTML
     - Server-render the showcase preview section by calling `getShowcasePreviewServer()`
     - Wrap showcase preview fetch in try/catch; render empty state message on failure instead of failing the whole page
     - _Requirements: 2.1, 2.3, 2.4, 2.5_
 
-  - [~] 4.2 Extract `AuthCard` client component
+  - [x] 4.2 Extract `AuthCard` client component
     - Create `src/app/(login)/AuthCard.tsx` (or `src/components/auth/AuthCard.tsx`) with `'use client'` directive
     - Move Google Sign-In button, auth state management (`useAuth`), error display with dismiss, and redirect logic into this component
     - Accept no props — manages its own state via `useAuth()` hook and `useRouter()`

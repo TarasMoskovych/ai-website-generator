@@ -39,6 +39,26 @@ vi.mock('next/image', () => ({
 }));
 
 // Mock the auth context
+vi.mock('@/components/auth/AuthProvider', () => ({
+  useAuth: () => ({
+    user: null,
+    loading: false,
+    isLoading: false,
+    error: null,
+    signInWithGoogle: vi.fn(),
+    signOut: vi.fn(),
+    clearError: vi.fn(),
+    getIdToken: vi.fn(),
+  }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/components/auth/ProtectedRoute', () => ({
+  getAndClearRedirectUrl: () => null,
+  storeRedirectUrl: vi.fn(),
+  ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 vi.mock('@/components/auth', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components/auth')>();
   return {

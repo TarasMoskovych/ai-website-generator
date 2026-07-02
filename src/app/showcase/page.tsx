@@ -18,6 +18,7 @@ import { getShowcasedWebsitesServer } from '@/lib/serverData';
 import { AppFooter } from '@/components/layout';
 import { ShowcaseWebsiteCard } from '@/components/ShowcaseWebsiteCard';
 import { ArrowLeftIcon, GlobeIcon } from '@/components/icons';
+import { ShowcasePagination } from './ShowcasePagination';
 
 // ─── Route Segment Config ────────────────────────────────────────────────────
 
@@ -76,14 +77,17 @@ function ErrorState({ message }: { message: string }) {
 // ─── Page Component ──────────────────────────────────────────────────────────
 
 export default async function ShowcasePage() {
+  const PAGE_SIZE = 12;
   let items: Awaited<ReturnType<typeof getShowcasedWebsitesServer>>['items'] = [];
   let totalCount = 0;
+  let totalPages = 0;
   let error: string | null = null;
 
   try {
-    const result = await getShowcasedWebsitesServer(1, 12);
+    const result = await getShowcasedWebsitesServer(1, PAGE_SIZE);
     items = result.items;
     totalCount = result.totalCount;
+    totalPages = result.totalPages;
   } catch (e) {
     error =
       e instanceof Error
@@ -155,11 +159,13 @@ export default async function ShowcasePage() {
               ))}
             </div>
 
-            {/* Pagination placeholder - ShowcasePagination client component will be added in Task 2.2 */}
-
-            <p className="text-center text-sm text-muted-foreground mt-10">
-              Showing 1-{Math.min(12, totalCount)} of {totalCount} websites
-            </p>
+            {/* Pagination - client component for page navigation */}
+            <ShowcasePagination
+              initialPage={1}
+              initialTotalPages={totalPages}
+              initialTotalCount={totalCount}
+              pageSize={PAGE_SIZE}
+            />
           </>
         )}
       </main>

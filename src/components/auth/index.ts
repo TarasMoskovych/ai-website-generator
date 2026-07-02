@@ -18,3 +18,5 @@ export type { UserProfileMenuProps } from './UserProfileMenu';
 
 export { GoogleSignInButton } from './GoogleSignInButton';
 export type { GoogleSignInButtonProps } from './GoogleSignInButton';
+
+export { AuthCard } from './AuthCard';
