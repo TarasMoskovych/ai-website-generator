@@ -75,7 +75,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Test empty state renders appropriate message
     - _Requirements: 1.1, 1.2, 1.4, 1.5_
 
-- [~] 3. Checkpoint - Ensure all tests pass
+- [x] 3. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 4. Convert Login Page static content to server rendering
@@ -159,7 +159,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Test error boundary renders retry mechanism
     - _Requirements: 3.4, 3.5, 3.6_
 
-- [~] 7. Checkpoint - Ensure all tests pass
+- [x] 7. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 8. Verify Generate Page remains client-only and ensure feature parity

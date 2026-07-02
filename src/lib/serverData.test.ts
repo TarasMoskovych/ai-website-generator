@@ -26,11 +26,12 @@ const websiteDocumentArb: fc.Arbitrary<WebsiteDocument> = fc.record({
   isShowcased: fc.oneof(fc.constant(true), fc.constant(false), fc.constant(undefined)),
   showcasedAt: fc.oneof(
     // ISO string date within a reasonable range
-    fc.date({ min: new Date('2020-01-01'), max: new Date('2030-12-31') }).map((d) => d.toISOString()),
+    fc.integer({ min: new Date('2020-01-01').getTime(), max: new Date('2030-12-31').getTime() }).map((ts) => new Date(ts).toISOString()),
     // Firestore Timestamp-like object
-    fc.date({ min: new Date('2020-01-01'), max: new Date('2030-12-31') }).map((d) => ({
-      toDate: () => d,
-    })),
+    fc.integer({ min: new Date('2020-01-01').getTime(), max: new Date('2030-12-31').getTime() }).map((ts) => {
+      const d = new Date(ts);
+      return { toDate: () => d };
+    }),
     // null or undefined
     fc.constant(null),
     fc.constant(undefined)
