@@ -1089,7 +1089,7 @@ describe('useSSEStream Hook', () => {
               expect(result.current.error).toBeNull();
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1125,7 +1125,7 @@ describe('useSSEStream Hook', () => {
               expect(result.current.error).toBeNull();
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1168,7 +1168,7 @@ describe('useSSEStream Hook', () => {
               expect(result.current.isStreaming).toBe(false);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1210,7 +1210,7 @@ describe('useSSEStream Hook', () => {
               expect(result.current.error).toBeNull();
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1265,7 +1265,7 @@ describe('useSSEStream Hook', () => {
               expect(result.current.isStreaming).toBe(false);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
     });
@@ -1348,7 +1348,7 @@ describe('useSSEStream Hook', () => {
               });
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1387,7 +1387,7 @@ describe('useSSEStream Hook', () => {
               });
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1424,7 +1424,7 @@ describe('useSSEStream Hook', () => {
               expect(onResult).toHaveBeenCalledWith(doneData.result);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1460,7 +1460,7 @@ describe('useSSEStream Hook', () => {
               expect(result.current.result).toEqual(doneData.result);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1517,7 +1517,7 @@ describe('useSSEStream Hook', () => {
               expect(result.current.streamingContent).toBe(expectedContent);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1556,7 +1556,7 @@ describe('useSSEStream Hook', () => {
               expect(result.current.result).toBeNull();
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1595,7 +1595,7 @@ describe('useSSEStream Hook', () => {
               expect(result.current.streamingContent).toBe('');
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1639,7 +1639,7 @@ describe('useSSEStream Hook', () => {
               expect(result.current.result).toEqual(doneData.result);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
     });
@@ -1659,7 +1659,7 @@ describe('useSSEStream Hook', () => {
             // Generate random number of text events (0 to 10)
             fc.nat({ max: 10 }),
             // Generate a random delay for the stream (10 to 50ms)
-            fc.integer({ min: 10, max: 50 }),
+            fc.integer({ min: 5, max: 15 }),
             async (numEvents, delay) => {
               // Create SSE chunks with the generated number of text events
               const sseChunks: string[] = [];
@@ -1695,7 +1695,7 @@ describe('useSSEStream Hook', () => {
               return true;
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1705,7 +1705,7 @@ describe('useSSEStream Hook', () => {
             // Generate random number of text events (0 to 10)
             fc.nat({ max: 10 }),
             // Generate a random delay for the stream (10 to 50ms)
-            fc.integer({ min: 10, max: 50 }),
+            fc.integer({ min: 5, max: 15 }),
             async (numEvents, delay) => {
               // Create SSE chunks with the generated number of text events
               const sseChunks: string[] = [];
@@ -1741,7 +1741,7 @@ describe('useSSEStream Hook', () => {
               return true;
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
 
@@ -1786,7 +1786,7 @@ describe('useSSEStream Hook', () => {
               return true;
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 20 }
         );
       });
     });

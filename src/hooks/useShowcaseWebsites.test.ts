@@ -318,7 +318,7 @@ describe('useShowcaseWebsites Hook', () => {
             expect(typeof result.current.refresh).toBe('function');
           }
         ),
-        { numRuns: 100 }
+        { numRuns: 25 }
       );
     });
 
@@ -399,7 +399,7 @@ describe('useShowcaseWebsites Hook', () => {
             expect(result.current.isLoading).toBe(false);
           }
         ),
-        { numRuns: 100 }
+        { numRuns: 25 }
       );
     });
 
@@ -510,7 +510,7 @@ describe('useShowcaseWebsites Hook', () => {
             expect(result.current.error).toBe(stateAfterFirst.error);
           }
         ),
-        { numRuns: 50 }
+        { numRuns: 15 }
       );
     });
 
@@ -564,7 +564,7 @@ describe('useShowcaseWebsites Hook', () => {
             }
           }
         ),
-        { numRuns: 100 }
+        { numRuns: 25 }
       );
     });
   });

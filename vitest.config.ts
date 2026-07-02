@@ -10,6 +10,11 @@ export default defineConfig({
     setupFiles: ['./src/tests/setup.ts'],
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['node_modules', '.next', 'dist'],
+    // Use per-file environment overrides for pure tests
+    environmentMatchGlobs: [
+      ['src/lib/**/*.test.ts', 'node'],
+      ['src/services/validation/**/*.test.ts', 'node'],
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -24,8 +29,7 @@ export default defineConfig({
         'eslint.config.mjs',
       ],
     },
-    // Property-based testing configuration for fast-check
-    testTimeout: 30000, // 30 seconds for property tests
+    testTimeout: 30000,
   },
   resolve: {
     alias: {

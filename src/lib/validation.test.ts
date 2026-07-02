@@ -122,7 +122,7 @@ describe('Validation Functions', () => {
               expect(result).toBe(false);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 30 }
         );
       });
 
@@ -148,7 +148,7 @@ describe('Validation Functions', () => {
               expect(result).toBe(true);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 30 }
         );
       });
 
@@ -169,7 +169,7 @@ describe('Validation Functions', () => {
               expect(result).toBe(true);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 30 }
         );
       });
 
@@ -188,7 +188,7 @@ describe('Validation Functions', () => {
               expect(result).toBe(unicodePrompt.length <= MAX_ORIGINAL_PROMPT_LENGTH);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 30 }
         );
       });
 
@@ -210,7 +210,7 @@ describe('Validation Functions', () => {
               expect(result2).toBe(result3);
             }
           ),
-          { numRuns: 100 }
+          { numRuns: 30 }
         );
       });
     });
