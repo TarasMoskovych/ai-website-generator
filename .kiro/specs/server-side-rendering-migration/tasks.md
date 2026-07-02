@@ -169,7 +169,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Add a smoke test confirming the directive is present
     - _Requirements: 3.7_
 
-  - [~] 8.2 Verify feature parity across all migrated pages
+  - [x] 8.2 Verify feature parity across all migrated pages
     - Ensure Showcase pagination works without full page reload with smooth scrolling
     - Ensure Login page Google Sign-In flow, error display/dismiss, and redirect work correctly
     - Ensure Dashboard retains deletion with confirmation, navigation, inline title editing, beautify, and showcase toggling

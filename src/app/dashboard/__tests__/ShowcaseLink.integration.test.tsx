@@ -43,9 +43,9 @@ vi.mock('@/components/layout', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/components/layout')>();
   return {
     ...actual,
-    AppHeader: ({ user }: { user: AuthenticatedUser | null }) => (
+    AppHeader: () => (
       <header data-testid="app-header">
-        {user && <span data-testid="logged-in-user">{user.displayName}</span>}
+        <span data-testid="logged-in-user">{mockAuthenticatedUser.displayName}</span>
       </header>
     ),
     AppFooter: () => <footer data-testid="mock-footer">Mock Footer</footer>,
