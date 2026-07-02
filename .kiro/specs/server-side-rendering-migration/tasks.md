@@ -162,7 +162,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
 - [~] 7. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Verify Generate Page remains client-only and ensure feature parity
+- [x] 8. Verify Generate Page remains client-only and ensure feature parity
   - [x] 8.1 Confirm Generate Page retains `'use client'` directive
     - Verify `src/app/generate/page.tsx` still has `'use client'` at the top
     - Ensure no server-side data fetching is introduced
@@ -177,7 +177,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Verify no hydration mismatches by checking client components render correctly after server HTML delivery
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [~] 8.3 Write integration tests for feature parity
+  - [x] 8.3 Write integration tests for feature parity
     - Test Showcase pagination client interaction
     - Test Dashboard actions (delete, navigate, edit, beautify, showcase toggle) still function
     - Test Website Preview features (code edit, preview, download, auto-save)
