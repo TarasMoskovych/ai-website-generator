@@ -109,7 +109,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - _Requirements: 2.1, 2.2, 2.3, 2.5_
 
 - [ ] 5. Implement streaming with Suspense for Dashboard page
-  - [~] 5.1 Rewrite Dashboard page with server-rendered shell and Suspense
+  - [x] 5.1 Rewrite Dashboard page with server-rendered shell and Suspense
     - Rewrite `src/app/dashboard/page.tsx` as a server component (remove top-level `'use client'`)
     - Server-render: `AppHeader`, navigation, page heading, layout container, and `AppFooter` as static HTML in the initial response
     - Wrap the data-dependent content area in `<Suspense fallback={<DashboardSkeleton />}>`
@@ -122,7 +122,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Used as the Suspense fallback for immediate visual feedback
     - _Requirements: 3.2_
 
-  - [~] 5.3 Create `src/app/dashboard/error.tsx` error boundary
+  - [x] 5.3 Create `src/app/dashboard/error.tsx` error boundary
     - Add `'use client'` directive
     - Accept `error` and `reset` props
     - Render error message with retry mechanism in the content area
@@ -135,7 +135,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - _Requirements: 3.1, 3.2, 3.3_
 
 - [ ] 6. Implement streaming with Suspense for Website Preview page
-  - [~] 6.1 Rewrite Website Preview page with server-rendered shell and Suspense
+  - [x] 6.1 Rewrite Website Preview page with server-rendered shell and Suspense
     - Rewrite `src/app/website/[id]/page.tsx` to render layout shell and toolbar as static HTML in the initial server response
     - Wrap the data-dependent content (`WebsitePageContent`) in `<Suspense fallback={<PreviewSkeleton />}>`
     - Keep `WebsitePageContent` as a `'use client'` component with all existing interactive logic
@@ -147,7 +147,7 @@ This plan migrates the AI Website Generator from client-side rendering to server
     - Used as the Suspense fallback
     - _Requirements: 3.5_
 
-  - [~] 6.3 Create `src/app/website/[id]/error.tsx` error boundary
+  - [x] 6.3 Create `src/app/website/[id]/error.tsx` error boundary
     - Add `'use client'` directive
     - Accept `error` and `reset` props
     - Render error message with retry mechanism
